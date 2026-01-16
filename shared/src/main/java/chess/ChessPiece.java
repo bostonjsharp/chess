@@ -11,6 +11,18 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessPiece {
+    private ChessGame.TeamColor color;
+    private ChessPiece.PieceType type;
+    private Moves moves;
+
+
+
+    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
+        this.color = pieceColor;
+        this.type = type;
+        this.moves = new Moves(type, color);
+
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -26,14 +38,6 @@ public class ChessPiece {
         return Objects.hash(color, type);
     }
 
-    private ChessGame.TeamColor color;
-    private ChessPiece.PieceType type;
-
-    public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
-        this.color = pieceColor;
-        this.type = type;
-
-    }
 
     /**
      * The various different chess piece options
@@ -69,41 +73,7 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-       ChessPiece piece = board.getPiece(myPosition);
-       if (piece.getPieceType() == PieceType.BISHOP) {
-           //slides in diagonal directions
-           //stops if hits edges, friendlies, or captures piece
-           return List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8), null));
-       }
-       if (piece.getPieceType() == PieceType.KING) {
-           //can only go one space in any direction
-           //stopped by edges, friendlies.
-           //uses offsets...?
-
-       }
-       if (piece.getPieceType() == PieceType.PAWN) {
-           //can only move forward unless diagonal has enemy
-           //forward two spaces only on first move
-           //en passant?
-           //promoted to different piece if it reaches the end of the board
-
-       }
-       if (piece.getPieceType() == PieceType.ROOK) {
-           //slides in cardinal directions
-           //stops at edges, friendlies, caputres piece
-
-       }
-       if (piece.getPieceType() == PieceType.KNIGHT) {
-           //2 spaces, then three spaces (L shape)
-           //jumps over pieces
-           //offsets as well...?
-
-       }
-       if (piece.getPieceType() == PieceType.QUEEN) {
-           //rook and bishop moves + king moves
-
-       }
-
-        return List.of();
+        ChessPiece piece = board.getPiece(myPosition);
+        return this.moves.getValid(board, myPosition);
     }
 }
