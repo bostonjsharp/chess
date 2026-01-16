@@ -30,8 +30,28 @@ public class Moves {
 
     public Collection<ChessMove> getValid(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> movesList = new ArrayList();
-        if (pieceType == ChessPiece.PieceType.BISHOP) {
+        if (pieceType == ChessPiece.PieceType.BISHOP || pieceType == ChessPiece.PieceType.QUEEN) {
+            for (int i = 0; i < BishopSteps.length; i++) {
+                for (int j = 1; j < 7; j++) {
+                    ChessPosition endPosition = new ChessPosition(myPosition.getRow() + (j * BishopSteps[i][0]), myPosition.getColumn() + (j * BishopSteps[i][1]));
+                    if (!this.isOnBoard(endPosition)) {
+                        break;
+                    }
+                    if (board.getPiece(endPosition) == null) {
+                        movesList.add(new ChessMove(myPosition, endPosition, null));
+                        continue;
+                    }
+                    if (board.getPiece(endPosition) != null && board.getPiece(endPosition).getTeamColor() != this.color) {
+                        movesList.add(new ChessMove(myPosition, endPosition, null));
+                        break;
+                    }
+                    if (board.getPiece(endPosition).getTeamColor() == this.color) {
+                        break;
+                    }
 
+
+                }
+            }
             //slides in diagonal directions
             //stops if hits edges, friendlies, or captures piece
 //           return List.of(new ChessMove(new ChessPosition(5,4), new ChessPosition(1,8), null));
@@ -62,10 +82,31 @@ public class Moves {
             //each possible promotion counts as a possible move.
 
         }
-        if (pieceType == ChessPiece.PieceType.ROOK) {
+        if (pieceType == ChessPiece.PieceType.ROOK ||pieceType == ChessPiece.PieceType.QUEEN) {
             //slides in cardinal directions
             //stops at edges, friendlies, captures piece
             //checks next step, checks if on board, empty, occupied, break.
+            for (int i = 0; i < RookSlides.length; i++) {
+                for (int j = 1; j < 7; j++) {
+                    ChessPosition endPosition = new ChessPosition(myPosition.getRow() + (j * RookSlides[i][0]), myPosition.getColumn() + (j * RookSlides[i][1]));
+                    if (!this.isOnBoard(endPosition)) {
+                        break;
+                    }
+                    if (board.getPiece(endPosition) == null) {
+                        movesList.add(new ChessMove(myPosition, endPosition, null));
+                        continue;
+                    }
+                    if (board.getPiece(endPosition) != null && board.getPiece(endPosition).getTeamColor() != this.color) {
+                        movesList.add(new ChessMove(myPosition, endPosition, null));
+                        break;
+                    }
+                    if (board.getPiece(endPosition).getTeamColor() == this.color) {
+                        break;
+                    }
+
+
+                }
+            }
 
         }
         if (pieceType == ChessPiece.PieceType.KNIGHT) {
@@ -80,11 +121,6 @@ public class Moves {
 
 
             }
-
-        }
-        if (pieceType == ChessPiece.PieceType.QUEEN) {
-            //rook and bishop moves + king moves
-
 
         }
 
@@ -112,5 +148,20 @@ public class Moves {
             {1,-2},
             {-1,-2}
     };
+
+    private int[][] BishopSteps = {
+            {1, 1},
+            {-1,1},
+            {-1,-1},
+            {1,-1}
+    };
+
+    private int[][] RookSlides = {
+            {0, 1},
+            {0,-1},
+            {1,0},
+            {-1,0}
+    };
+
 
 }
