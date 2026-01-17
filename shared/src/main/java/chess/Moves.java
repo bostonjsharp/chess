@@ -74,6 +74,64 @@ public class Moves {
 
         }
         if (pieceType == ChessPiece.PieceType.PAWN) {
+            ChessPosition normalEndPosition = null;
+            ChessPosition starterRowEndPosition = null;
+            ChessPosition diag1 = null;
+            ChessPosition diag2 = null;
+
+            if(this.color == ChessGame.TeamColor.BLACK){
+                normalEndPosition = new ChessPosition(myPosition.getRow() -1, myPosition.getColumn());
+                starterRowEndPosition = new ChessPosition(myPosition.getRow() -2, myPosition.getColumn());
+                diag1 = new ChessPosition(myPosition.getRow() -1, myPosition.getColumn() -1);
+                diag2 = new ChessPosition(myPosition.getRow() -1, myPosition.getColumn() +1);
+
+            }
+            if(this.color == ChessGame.TeamColor.WHITE){
+                normalEndPosition = new ChessPosition(myPosition.getRow() +1, myPosition.getColumn());
+                starterRowEndPosition = new ChessPosition(myPosition.getRow() +2, myPosition.getColumn());
+                diag1 = new ChessPosition(myPosition.getRow() +1, myPosition.getColumn() -1);
+                diag2 = new ChessPosition(myPosition.getRow() +1, myPosition.getColumn() +1);
+            }
+            if(board.getPiece(normalEndPosition) == null){
+                if((this.color == ChessGame.TeamColor.BLACK && myPosition.getRow() == 7 && board.getPiece(starterRowEndPosition) == null ) || (this.color == ChessGame.TeamColor.WHITE && myPosition.getRow() == 2 && board.getPiece(starterRowEndPosition) == null)){
+                    movesList.add(new ChessMove(myPosition,starterRowEndPosition, null));
+                }
+                if((this.color == ChessGame.TeamColor.BLACK && normalEndPosition.getRow() == 1) || (this.color == ChessGame.TeamColor.WHITE && normalEndPosition.getRow() == 8)){
+                    movesList.add(new ChessMove(myPosition,normalEndPosition, ChessPiece.PieceType.QUEEN));
+                    movesList.add(new ChessMove(myPosition,normalEndPosition, ChessPiece.PieceType.BISHOP));
+                    movesList.add(new ChessMove(myPosition,normalEndPosition, ChessPiece.PieceType.KNIGHT));
+                    movesList.add(new ChessMove(myPosition,normalEndPosition, ChessPiece.PieceType.ROOK));
+                }
+                else {
+                    movesList.add(new ChessMove(myPosition, normalEndPosition, null));
+                }
+            }
+            if(isOnBoard(diag1) && board.getPiece(diag1) != null) {
+                if (board.getPiece(diag1).getTeamColor() != this.color) {
+                    if ((this.color == ChessGame.TeamColor.BLACK && diag1.getRow() == 1) || (this.color == ChessGame.TeamColor.WHITE && diag1.getRow() == 8)) {
+                        movesList.add(new ChessMove(myPosition, diag1, ChessPiece.PieceType.QUEEN));
+                        movesList.add(new ChessMove(myPosition, diag1, ChessPiece.PieceType.BISHOP));
+                        movesList.add(new ChessMove(myPosition, diag1, ChessPiece.PieceType.KNIGHT));
+                        movesList.add(new ChessMove(myPosition, diag1, ChessPiece.PieceType.ROOK));
+                    }
+                    else {
+                        movesList.add(new ChessMove(myPosition, diag1, null));
+                    }
+                }
+            }
+            if(isOnBoard(diag2) && board.getPiece(diag2) != null) {
+                if (board.getPiece(diag2).getTeamColor() != this.color) {
+                    if ((this.color == ChessGame.TeamColor.BLACK && diag2.getRow() == 1) || (this.color == ChessGame.TeamColor.WHITE && diag2.getRow() == 8)) {
+                        movesList.add(new ChessMove(myPosition, diag2, ChessPiece.PieceType.QUEEN));
+                        movesList.add(new ChessMove(myPosition, diag2, ChessPiece.PieceType.BISHOP));
+                        movesList.add(new ChessMove(myPosition, diag2, ChessPiece.PieceType.KNIGHT));
+                        movesList.add(new ChessMove(myPosition, diag2, ChessPiece.PieceType.ROOK));
+                    }
+                    else {
+                        movesList.add(new ChessMove(myPosition, diag2, null));
+                    }
+                }
+            }
             //can only move forward unless diagonal has enemy
             //forward two spaces only on first move
             //en passant?
