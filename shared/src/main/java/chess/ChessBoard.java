@@ -10,20 +10,6 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessBoard {
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ChessBoard that = (ChessBoard) o;
-        return Objects.deepEquals(board, that.board);
-    }
-
-    @Override
-    public int hashCode() {
-        return Arrays.deepHashCode(board);
-    }
-
     private ChessPiece[][] board;
 
     public ChessBoard() {
@@ -97,5 +83,18 @@ public class ChessBoard {
             this.board[5][i-1] = null;
         }
 
+    }
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessBoard that = (ChessBoard) o;
+        return Objects.deepEquals(board, that.board);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(board);
     }
 }
