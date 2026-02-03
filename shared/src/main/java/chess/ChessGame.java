@@ -13,19 +13,11 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor turn;
-    
+
     public ChessGame() {
         this.board = new ChessBoard();
         this.turn = TeamColor.WHITE;
 
-    }
-
-    //helper method that pulls "candidate moves?"
-
-    public Collection<ChessMove> candidateMoves(TeamColor team){
-        Collection<ChessMove> candidateList = new ArrayList();
-
-        return candidateList;
     }
 
     /**
@@ -111,7 +103,18 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         if (getTeamTurn() != teamColor) return false;
         if (isInCheck(teamColor)) return false;
-        if (!candidateMoves(teamColor).isEmpty()) return false;
+        for (int i = 1; i <= 8; i++){
+            for(int j= 1; j<= 8; j++){
+                ChessPosition position = new ChessPosition(i,j);
+                ChessPiece piece = board.getPiece(position);
+                if (piece ==  null || piece.getTeamColor() != teamColor){
+                    continue;
+                }
+                if(!validMoves(position).isEmpty()){
+                    return false;
+                }
+            }
+        }
 
         return true;
     }
