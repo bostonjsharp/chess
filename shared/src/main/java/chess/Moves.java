@@ -7,7 +7,10 @@ public class Moves {
     private ChessGame.TeamColor color;
 
     private boolean isOnBoard(ChessPosition position) {
-        if(position.getRow() > 8 || position.getRow() < 1 || position.getColumn() > 8 || position.getColumn() < 1){
+        if(position.getRow() > 8 ||
+                position.getRow() < 1 ||
+                position.getColumn() > 8 ||
+                position.getColumn() < 1){
             return false;
         }
         return true;
@@ -22,46 +25,23 @@ public class Moves {
 
     public Collection<ChessMove> getValid(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> movesList = new ArrayList();
-
-        if (pieceType == ChessPiece.PieceType.BISHOP || pieceType == ChessPiece.PieceType.QUEEN) {
-            for (int i = 0; i < bishopSteps.length; i++) {
-                for (int j = 1; j < 7; j++) {
-                    ChessPosition endPosition = new ChessPosition(myPosition.getRow() + (j * bishopSteps[i][0]), myPosition.getColumn() + (j * bishopSteps[i][1]));
-                    if (!this.isOnBoard(endPosition)) {
-                        break;
-                    }
-                    if (board.getPiece(endPosition) == null) {
-                        movesList.add(new ChessMove(myPosition, endPosition, null));
-                        continue;
-                    }
-                    if (board.getPiece(endPosition) != null && board.getPiece(endPosition).getTeamColor() != this.color) {
-                        movesList.add(new ChessMove(myPosition, endPosition, null));
-                        break;
-                    }
-                    if (board.getPiece(endPosition).getTeamColor() == this.color) {
-                        break;
-                    }
-
-
-                }
-            }
+        if (pieceType == ChessPiece.PieceType.BISHOP ||
+                pieceType == ChessPiece.PieceType.QUEEN) {
+            slideRules(myPosition, movesList, bishopSteps, board);
         }
+        if (pieceType == ChessPiece.PieceType.ROOK ||
+                pieceType == ChessPiece.PieceType.QUEEN) {
+            slideRules(myPosition, movesList, rookSlides, board);
 
+        }
         if (pieceType == ChessPiece.PieceType.KING) {
-            for(int i = 0; i < kingOffsets.length; i++) {
-                ChessPosition endPosition = new ChessPosition(myPosition.getRow() + kingOffsets[i][0], myPosition.getColumn() + kingOffsets[i][1]);
-                if(!this.isOnBoard(endPosition)){
-                    continue;
-                }
-                if(board.getPiece(endPosition) == null || board.getPiece(endPosition).getTeamColor() != this.color) {
-                    movesList.add(new ChessMove(myPosition,endPosition, null));
-                }
-
-
-            }
+            jumpRules(myPosition, movesList, kingOffsets, board);
 
         }
+        if (pieceType == ChessPiece.PieceType.KNIGHT) {
+            jumpRules(myPosition, movesList, knightOffsets, board);
 
+        }
         if(pieceType == ChessPiece.PieceType.PAWN){
             ChessPosition normalEndPosition = null;
             ChessPosition specialEndPosition = null;
@@ -99,7 +79,9 @@ public class Moves {
                     movesList.add(new ChessMove(myPosition, normalEndPosition, null));
                 }
             }
-            if(myPosition.getRow() == startRow && board.getPiece(normalEndPosition) == null && board.getPiece(specialEndPosition) == null){
+            if(myPosition.getRow() == startRow &&
+                    board.getPiece(normalEndPosition) == null &&
+                    board.getPiece(specialEndPosition) == null){
                 movesList.add(new ChessMove(myPosition, specialEndPosition, null));
             }
             if(isOnBoard(diag1) && board.getPiece(diag1) != null && board.getPiece(diag1).getTeamColor() != color){
@@ -124,51 +106,45 @@ public class Moves {
                     movesList.add(new ChessMove(myPosition, diag2, null));
                 }
             }
-
-
         }
+        return movesList;
+    }
 
-        if (pieceType == ChessPiece.PieceType.ROOK ||pieceType == ChessPiece.PieceType.QUEEN) {
-            for (int i = 0; i < rookSlides.length; i++) {
-                for (int j = 1; j < 7; j++) {
-                    ChessPosition endPosition = new ChessPosition(myPosition.getRow() + (j * rookSlides[i][0]), myPosition.getColumn() + (j * rookSlides[i][1]));
-                    if (!this.isOnBoard(endPosition)) {
-                        break;
-                    }
-                    if (board.getPiece(endPosition) == null) {
-                        movesList.add(new ChessMove(myPosition, endPosition, null));
-                        continue;
-                    }
-                    if (board.getPiece(endPosition) != null && board.getPiece(endPosition).getTeamColor() != this.color) {
-                        movesList.add(new ChessMove(myPosition, endPosition, null));
-                        break;
-                    }
-                    if (board.getPiece(endPosition).getTeamColor() == this.color) {
-                        break;
-                    }
-
-
+    private void slideRules(ChessPosition myPosition, Collection<ChessMove> movesList, int[][] offsetSet, ChessBoard board){
+        for (int i = 0; i < offsetSet.length; i++) {
+            for (int j = 1; j < 7; j++) {
+                ChessPosition endPosition = new ChessPosition(myPosition.getRow()+(j*offsetSet[i][0]),myPosition.getColumn()+(j*offsetSet[i][1]));
+                if (!this.isOnBoard(endPosition)) {
+                    break;
                 }
-            }
-
-        }
-
-        if (pieceType == ChessPiece.PieceType.KNIGHT) {
-            for(int i = 0; i < knightOffsets.length; i++) {
-                ChessPosition endPosition = new ChessPosition(myPosition.getRow() + knightOffsets[i][0], myPosition.getColumn() + knightOffsets[i][1]);
-                if(!this.isOnBoard(endPosition)){
+                if (board.getPiece(endPosition) == null) {
+                    movesList.add(new ChessMove(myPosition, endPosition, null));
                     continue;
                 }
-                if(board.getPiece(endPosition) == null || board.getPiece(endPosition).getTeamColor() != this.color) {
-                    movesList.add(new ChessMove(myPosition,endPosition, null));
+                if (board.getPiece(endPosition) != null && board.getPiece(endPosition).getTeamColor() != this.color) {
+                    movesList.add(new ChessMove(myPosition, endPosition, null));
+                    break;
                 }
-
-
+                if (board.getPiece(endPosition).getTeamColor() == this.color) {
+                    break;
+                }
             }
+        }
+    }
+
+    private void jumpRules(ChessPosition myPosition, Collection<ChessMove> movesList, int[][] offsetSet, ChessBoard board){
+        for(int i = 0; i < offsetSet.length; i++) {
+            ChessPosition endPosition = new ChessPosition(myPosition.getRow()+offsetSet[i][0],myPosition.getColumn()+offsetSet[i][1]);
+            if(!this.isOnBoard(endPosition)){
+                continue;
+            }
+            if(board.getPiece(endPosition) == null || board.getPiece(endPosition).getTeamColor() != this.color) {
+                movesList.add(new ChessMove(myPosition,endPosition, null));
+            }
+
 
         }
 
-        return movesList;
     }
 
     private static int[][] kingOffsets = {

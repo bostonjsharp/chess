@@ -63,7 +63,6 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
 
         //do move -> set team turn to other team
     }
@@ -82,15 +81,8 @@ public class ChessGame {
     //use for valid moves weeding
     //start here
 
-    /**
-     * Determines if the given team is in checkmate
-     *
-     * @param teamColor which team to check for checkmate
-     * @return True if the specified team is in checkmate
-     */
-    public boolean isInCheckmate(TeamColor teamColor) {
-        if (getTeamTurn() != teamColor) return false;
-        if (!isInCheck(teamColor)) return false;
+
+    private boolean pullPieces(TeamColor teamColor){
         for (int i = 1; i <= 8; i++){
             for(int j= 1; j<= 8; j++){
                 ChessPosition position = new ChessPosition(i,j);
@@ -103,8 +95,18 @@ public class ChessGame {
                 }
             }
         }
-
         return true;
+    }
+    /**
+     * Determines if the given team is in checkmate
+     *
+     * @param teamColor which team to check for checkmate
+     * @return True if the specified team is in checkmate
+     */
+    public boolean isInCheckmate(TeamColor teamColor) {
+        if (getTeamTurn() != teamColor) return false;
+        if (!isInCheck(teamColor)) return false;
+        return pullPieces(teamColor);
     }
     //your turn -> no valid moves -> king is in check
 
@@ -118,20 +120,7 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         if (getTeamTurn() != teamColor) return false;
         if (isInCheck(teamColor)) return false;
-        for (int i = 1; i <= 8; i++){
-            for(int j= 1; j<= 8; j++){
-                ChessPosition position = new ChessPosition(i,j);
-                ChessPiece piece = board.getPiece(position);
-                if (piece ==  null || piece.getTeamColor() != teamColor){
-                    continue;
-                }
-                if(!validMoves(position).isEmpty()){
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return pullPieces(teamColor);
     }
     //your turn -> no valid moves
 
@@ -152,4 +141,6 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+
 }
