@@ -14,6 +14,8 @@ public class ChessGame {
 
     }
 
+    //helper method that pulls "candidate moves?"
+
     /**
      * @return Which team's turn it is
      */
@@ -69,6 +71,10 @@ public class ChessGame {
         throw new RuntimeException("Not implemented");
     }
 
+    //clone the board -> perform a move on cloned board -> see if it would put the king in check or get the king out of check
+    //use for valid moves weeding
+    //start here
+
     /**
      * Determines if the given team is in checkmate
      *
@@ -78,6 +84,7 @@ public class ChessGame {
     public boolean isInCheckmate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
     }
+    //your turn -> no valid moves -> king is in check
 
     /**
      * Determines if the given team is in stalemate, which here is defined as having
@@ -89,6 +96,7 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         throw new RuntimeException("Not implemented");
     }
+    //your turn -> no valid moves
 
     /**
      * Sets this game's chessboard with a given board
