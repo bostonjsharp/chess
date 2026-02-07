@@ -32,7 +32,6 @@ public class Moves {
         if (pieceType == ChessPiece.PieceType.ROOK ||
                 pieceType == ChessPiece.PieceType.QUEEN) {
             slideRules(myPosition, movesList, rookSlides, board);
-
         }
         if (pieceType == ChessPiece.PieceType.KING) {
             jumpRules(myPosition, movesList, kingOffsets, board);
@@ -112,7 +111,7 @@ public class Moves {
 
     private void slideRules(ChessPosition myPosition, Collection<ChessMove> movesList, int[][] offsetSet, ChessBoard board){
         for (int i = 0; i < offsetSet.length; i++) {
-            for (int j = 1; j < 7; j++) {
+            for (int j = 1; j <= 7; j++) {
                 ChessPosition endPosition = new ChessPosition(myPosition.getRow()+(j*offsetSet[i][0]),myPosition.getColumn()+(j*offsetSet[i][1]));
                 if (!this.isOnBoard(endPosition)) {
                     break;

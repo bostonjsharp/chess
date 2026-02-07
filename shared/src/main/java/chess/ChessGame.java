@@ -55,6 +55,7 @@ public class ChessGame {
         board.addPiece(move.getEndPosition(), piece);
         board.removePiece(move.getStartPosition());
 
+
     }
 
     private Collection<ChessMove> simulateGame(ChessBoard board, Collection<ChessMove> rawMoves, ChessPiece piece){
@@ -64,6 +65,7 @@ public class ChessGame {
             clone.setBoard(new ChessBoard(board)) ;
             clone.setTeamTurn(this.turn);
             clone.simulateMove(rawMove);
+            ChessPiece stillThere = clone.getBoard().getPiece(rawMove.getStartPosition());
             //if move leads to check, add to list to be removed from validMoves
             if(clone.isInCheck(piece.getTeamColor())){
                 invalidMoves.add(rawMove);
@@ -96,13 +98,18 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         //check if move is in list of valid moves, check if it's the teams turn
-        ChessPiece piece = board.getPiece(move.getStartPosition());
+        ChessPiece firstPiece = board.getPiece(move.getStartPosition());
         Collection<ChessMove> candidateMoves = validMoves(move.getStartPosition());
-
-        if(candidateMoves == null || !candidateMoves.contains(move) || this.turn != piece.getTeamColor()){
+        if(candidateMoves == null ||
+                !candidateMoves.contains(move) ||
+                this.turn != firstPiece.getTeamColor()){
             throw new InvalidMoveException(""); //TODO: setup exception
         }
-        //TODO: handle pawns and promo pieces
+        ChessPiece piece = firstPiece;
+
+        if(move.getPromotionPiece() != null){
+            piece = new ChessPiece(firstPiece.getTeamColor(), move.getPromotionPiece());
+        }
         board.addPiece(move.getEndPosition(), piece);
         board.removePiece(move.getStartPosition());
         setTeamTurn(getTeamTurn() == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE);
