@@ -51,7 +51,6 @@ public class ChessGame {
         //check if move is in list of valid moves, check if it's the teams turn
         ChessPiece piece = board.getPiece(move.getStartPosition());
         if(piece == null){return;}
-        //TODO: handle pawns and promo pieces
         board.addPiece(move.getEndPosition(), piece);
         board.removePiece(move.getStartPosition());
 
@@ -103,7 +102,7 @@ public class ChessGame {
         if(candidateMoves == null ||
                 !candidateMoves.contains(move) ||
                 this.turn != firstPiece.getTeamColor()){
-            throw new InvalidMoveException(""); //TODO: setup exception
+            throw new InvalidMoveException("");
         }
         ChessPiece piece = firstPiece;
 
@@ -135,16 +134,13 @@ public class ChessGame {
                     continue;
                 }
                 //Need to get valid moves from the Moves class or else infinite recursion
-                if (piece.getTeamColor() != teamColor){
-                    var oppMoves = piece.pieceMoves(board, position);
-                    for (ChessMove oppMove : oppMoves) {
-                        if (oppMove.getEndPosition().equals(myKingPosition)){
-                            return true;
-                        }
-
+                if (piece.getTeamColor() == teamColor){ continue;}
+                var oppMoves = piece.pieceMoves(board, position);
+                for (ChessMove oppMove : oppMoves) {
+                    if (oppMove.getEndPosition().equals(myKingPosition)){
+                        return true;
                     }
-//                    if(oppMoves.stream().anyMatch((chessM -> chessM.getEndPosition() == myKingPosition))){
-//                        return true;
+
                 }
             }
         }
@@ -178,8 +174,8 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        if (getTeamTurn() != teamColor) return false;
-        if (!isInCheck(teamColor)) return false;
+        if (getTeamTurn() != teamColor){ return false;}
+        if (!isInCheck(teamColor)){ return false;}
         return pullPieces(teamColor);
     }
     //your turn -> no valid moves -> king is in check
@@ -192,8 +188,8 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        if (getTeamTurn() != teamColor) return false;
-        if (isInCheck(teamColor)) return false;
+        if (getTeamTurn() != teamColor){ return false;}
+        if (isInCheck(teamColor)){ return false;}
         return pullPieces(teamColor);
     }
     //your turn -> no valid moves
