@@ -1,6 +1,12 @@
 package server;
 
+import dataaccess.AuthDAO;
+import dataaccess.MemoryAuthDAO;
+import dataaccess.MemoryUserDAO;
+import dataaccess.UserDAO;
+import handler.RegisterHandler;
 import io.javalin.*;
+import service.RegisterService;
 
 public class Server {
 
@@ -9,7 +15,13 @@ public class Server {
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
 
-        // Register your endpoints and exception handlers here.
+        UserDAO userDAO = new MemoryUserDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();
+
+        RegisterService registerService = new RegisterService(userDAO, authDAO);
+        RegisterHandler registerHandler = new RegisterHandler(registerService);
+
+        javalin.post("/user", registerHandler::register);
 
     }
 
