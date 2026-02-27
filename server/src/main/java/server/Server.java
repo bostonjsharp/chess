@@ -7,6 +7,7 @@ import dataaccess.UserDAO;
 import handler.RegisterHandler;
 import io.javalin.*;
 import service.RegisterService;
+import com.google.gson.Gson;
 
 public class Server {
 
