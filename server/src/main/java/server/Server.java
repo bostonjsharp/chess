@@ -5,9 +5,11 @@ import dataaccess.MemoryAuthDAO;
 import dataaccess.MemoryUserDAO;
 import dataaccess.UserDAO;
 import handler.ClearHandler;
+import handler.LoginHandler;
 import handler.RegisterHandler;
 import io.javalin.*;
 import service.ClearService;
+import service.LoginService;
 import service.RegisterService;
 import com.google.gson.Gson;
 
@@ -27,8 +29,12 @@ public class Server {
         ClearService clearService = new ClearService(userDAO, authDAO);
         ClearHandler clearHandler = new ClearHandler(clearService);
 
+        LoginService loginService = new LoginService(userDAO, authDAO);
+        LoginHandler loginHandler = new LoginHandler(loginService);
+
         javalin.post("/user", registerHandler::register);
         javalin.delete("/db", clearHandler::clear);
+        javalin.post("/session", loginHandler::login);
     }
 
     public int run(int desiredPort) {

@@ -18,7 +18,10 @@ public class RegisterService {
     }
 
     public RegisterResult register(RegisterRequest request) throws ServiceException {
-        if (request == null || request.username() == null || request.password() == null || request.email() == null) {
+        if (request == null ||
+                request.username() == null ||
+                request.password() == null ||
+                request.email() == null) {
             throw new ServiceException(400, "Error: bad request");
         }
         if(userDAO.getUser(request.username()) != null){
