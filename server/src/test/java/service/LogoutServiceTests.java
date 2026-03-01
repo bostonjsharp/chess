@@ -1,13 +1,10 @@
 package service;
 
-import dataaccess.MemoryUserDAO;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import dataaccess.MemoryAuthDAO;
 import model.AuthData;
 import requests.LogoutRequest;
-import service.LogoutService;
-import service.ServiceException;
 
 public class LogoutServiceTests {
 

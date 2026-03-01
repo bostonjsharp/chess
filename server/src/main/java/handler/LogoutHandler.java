@@ -17,7 +17,7 @@ public class LogoutHandler {
 
     public void logout(Context ctx) {
         try {
-            String token = ctx.header("authorization");
+            String token = ctx.header("bigAuth");
             LogoutRequest request = new LogoutRequest(token);
             logoutService.logout(request);
 

@@ -1,15 +1,9 @@
 package server;
 
 import dataaccess.*;
-import handler.ClearHandler;
-import handler.LoginHandler;
-import handler.LogoutHandler;
-import handler.RegisterHandler;
+import handler.*;
 import io.javalin.*;
-import service.ClearService;
-import service.LoginService;
-import service.LogoutService;
-import service.RegisterService;
+import service.*;
 import com.google.gson.Gson;
 
 public class Server {
@@ -35,10 +29,14 @@ public class Server {
         LogoutService logoutService = new LogoutService(authDAO);
         LogoutHandler logoutHandler = new LogoutHandler(logoutService);
 
+        ListGamesService listGamesService = new ListGamesService(authDAO, gameDAO);
+        ListGamesHandler listGamesHandler = new ListGamesHandler(listGamesService);
+
         javalin.post("/user", registerHandler::register);
         javalin.delete("/db", clearHandler::clear);
         javalin.post("/session", loginHandler::login);
         javalin.delete("/session", logoutHandler::logout);
+        javalin.get("/game", listGamesHandler::listGames);
     }
 
     public int run(int desiredPort) {
