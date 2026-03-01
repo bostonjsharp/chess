@@ -15,8 +15,8 @@ public class CreateGameService {
         this.gameDAO = gameDAO;
     }
 
-    public CreateGameResult createGame(String authToken, CreateGameRequest request) throws ServiceException{
-        if(authToken == null || request.authToken() == null || authDAO.getAuth(authToken) == null ){
+    public CreateGameResult createGame(CreateGameRequest request) throws ServiceException{
+        if(request == null || request.authToken() == null || authDAO.getAuth(request.authToken()) == null ){
             throw new ServiceException(401, "Error: unauthorized");
         }
         if (request.gameName() == null){

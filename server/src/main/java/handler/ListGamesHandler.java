@@ -17,7 +17,7 @@ public class ListGamesHandler {
 
     public void listGames(Context ctx) {
         try{
-            String token = ctx.header("bigAuth");
+            String token = ctx.header("authorization");
             ListGamesResult result = listGamesService.listGames(new ListGamesRequest(token));
             ctx.status(200);
             ctx.contentType("application/json");

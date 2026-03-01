@@ -32,11 +32,15 @@ public class Server {
         ListGamesService listGamesService = new ListGamesService(authDAO, gameDAO);
         ListGamesHandler listGamesHandler = new ListGamesHandler(listGamesService);
 
+        CreateGameService createGameService = new CreateGameService(authDAO, gameDAO);
+        CreateGameHandler createGameHandler = new CreateGameHandler(createGameService);
+
         javalin.post("/user", registerHandler::register);
         javalin.delete("/db", clearHandler::clear);
         javalin.post("/session", loginHandler::login);
         javalin.delete("/session", logoutHandler::logout);
         javalin.get("/game", listGamesHandler::listGames);
+        javalin.post("/game", createGameHandler::createGame);
     }
 
     public int run(int desiredPort) {
