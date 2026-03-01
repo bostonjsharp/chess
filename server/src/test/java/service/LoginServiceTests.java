@@ -11,7 +11,7 @@ import results.LoginResult;
 public class LoginServiceTests {
 
     @Test
-    public void loginSuccess() throws Exception {
+    public void loginSuccess() throws ServiceException {
         MemoryUserDAO userDAO = new MemoryUserDAO();
         MemoryAuthDAO authDAO = new MemoryAuthDAO();
 
