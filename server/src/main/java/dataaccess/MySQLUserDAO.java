@@ -9,12 +9,12 @@ public class MySQLUserDAO implements UserDAO {
         try(var conn = DatabaseManager.getConnection(); var statemnt = conn.prepareStatement(sql)){
             statemnt.setString(1, username);
 
-            try(var rs = statemnt.executeQuery()){
-                if (rs.next()){
+            try(var resSet = statemnt.executeQuery()){
+                if (resSet.next()){
                     return new UserData(
-                            rs.getString("username"),
-                            rs.getString("password"),
-                            rs.getString("email")
+                            resSet.getString("username"),
+                            resSet.getString("password"),
+                            resSet.getString("email")
                     );
                 }
             }
@@ -41,6 +41,11 @@ public class MySQLUserDAO implements UserDAO {
     }
 
     public void clear() {
-
+        String sql = "DELETE FROM users";
+        try (var conn = DatabaseManager.getConnection(); var statemnt = conn.prepareStatement(sql)){
+            statemnt.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Error clearing users", e);
+        }
     }
 }
