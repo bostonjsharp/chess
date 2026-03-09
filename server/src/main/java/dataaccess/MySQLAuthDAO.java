@@ -2,7 +2,7 @@ package dataaccess;
 
 import model.AuthData;
 
-public class MySQLAuthDAO {
+public class MySQLAuthDAO implements AuthDAO{
 
     public AuthData getAuth(String authToken){
         String sql = "SELECT authToken, username FROM auths WHERE authToken = ?";
@@ -32,6 +32,18 @@ public class MySQLAuthDAO {
             throw new RuntimeException("Error creating auth", e);
         }
     }
+
+    public void deleteAuth(String authToken) {
+        String sql = "DELETE FROM auths WHERE authToken = ?";
+
+        try (var conn = DatabaseManager.getConnection(); var statemnt = conn.prepareStatement(sql)) {
+            statemnt.setString(1, authToken);
+            statemnt.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException("Error deleting auth", e);
+        }
+    }
+
     public void clear() {
         String sql = "DELETE FROM auths";
 
