@@ -36,6 +36,17 @@ public class SqlAuthDAOTest {
     }
 
     @Test
+    public void getAuthSuccess() {
+        AuthData auth = new AuthData("token1", "bost");
+        authDAO.createAuth(auth);
+        AuthData result = authDAO.getAuth("token1");
+
+        assertNotNull(result);
+        assertEquals("token1", result.authToken());
+        assertEquals("bost", result.username());
+    }
+
+    @Test
     public void deleteAuthSuccess() {
         AuthData auth = new AuthData("token1", "bost");
         authDAO.createAuth(auth);
@@ -43,5 +54,14 @@ public class SqlAuthDAOTest {
 
         AuthData result = authDAO.getAuth("token1");
         assertNull(result);
+    }
+
+    @Test
+    public void clearSuccess() {
+        authDAO.createAuth(new AuthData("token1", "bost"));
+        authDAO.createAuth(new AuthData("token2", "boston"));
+        authDAO.clear();
+        assertNull(authDAO.getAuth("token1"));
+        assertNull(authDAO.getAuth("token2"));
     }
 }

@@ -34,4 +34,17 @@ public class SqlUserDAOTest {
         UserData result = userDAO.getUser("bingbong");
         assertNull(result);
     }
+
+    @Test
+    public void clearUserSuccess(){
+        UserData user1 = new UserData("bost", "pass", "test@gmail.com");
+        UserData user2 = new UserData("boston", "password", "testing@gmail.com");
+        userDAO.createUser(user1);
+        userDAO.createUser(user2);
+        userDAO.clear();
+        assertNull(userDAO.getUser("bost"));
+        assertNull(userDAO.getUser("boston"));
+
+
+    }
 }
