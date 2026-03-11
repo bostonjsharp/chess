@@ -31,6 +31,10 @@ public class CreateGameHandler {
             ctx.status(e.getStatusCode());
             ctx.contentType("application/json");
             ctx.result(gson.toJson(new ErrorResponse(e.getMessage())));
+        }catch (Exception e) {
+            ctx.status(500);
+            ctx.contentType("application/json");
+            ctx.result(gson.toJson(new ErrorResponse("Error: internal server error")));
         }
     }
 }

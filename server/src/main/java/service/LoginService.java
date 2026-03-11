@@ -6,8 +6,8 @@ import model.AuthData;
 import model.UserData;
 import requests.LoginRequest;
 import results.LoginResult;
-
 import java.util.UUID;
+import org.mindrot.jbcrypt.BCrypt;
 
 public class LoginService {
     private UserDAO userDAO;
@@ -28,7 +28,7 @@ public class LoginService {
         if(user == null){
             throw new ServiceException(401, "Error: unauthorized");
         }
-        if(!user.password().equals(request.password())){
+        if(!BCrypt.checkpw(request.password(), user.password())){
             throw new ServiceException(401, "Error: unauthorized");
         }
         String token = UUID.randomUUID().toString();
