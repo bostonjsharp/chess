@@ -31,8 +31,8 @@ public class SqlAuthDAOTest {
 
     @Test
     public void getAuthFailure() {
-        AuthData result = authDAO.getAuth("yeehaw");
-        assertNull(result);
+        AuthData fail = authDAO.getAuth("yeehaw");
+        assertNull(fail);
     }
 
     @Test
