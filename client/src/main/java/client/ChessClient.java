@@ -1,5 +1,9 @@
 package client;
 
+import model.GameData;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class ChessClient {
@@ -9,6 +13,7 @@ public class ChessClient {
     private final ServerFacade server = new ServerFacade("http://localhost:8080");
     private String authToken = null;
     private String username = null;
+    private List<GameData> listedGames = new ArrayList<>();
 
     public void run() {
         System.out.println("""
@@ -82,6 +87,31 @@ public class ChessClient {
             authToken = null;
             username = null;
             return "Logged out. Goodbye!";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String listGames(){
+        try {
+            var result = server.listGames(authToken);
+            listedGames = new ArrayList<>(result.games());
+            if (listedGames.isEmpty()){
+                return "No games found!";
+            }
+            StringBuilder out = new StringBuilder();
+            for (int i = 0; i < listedGames.size(); i++){
+                GameData game = listedGames.get(i);
+                out.append(i +1)
+                    .append(". ")
+                    .append(game.gameName())
+                        .append(" > White: ")
+                        .append(game.whiteUsername() == null ? "-" : game.whiteUsername())
+                        .append(" > Black: ")
+                        .append(game.blackUsername() == null ? "-" : game.blackUsername())
+                        .append("\n");
+            }
+            return out.toString();
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }

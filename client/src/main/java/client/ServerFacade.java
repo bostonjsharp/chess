@@ -2,7 +2,9 @@ package client;
 
 import com.google.gson.Gson;
 import model.AuthData;
+import requests.CreateGameRequest;
 import requests.RegisterRequest;
+import results.CreateGameResult;
 import results.ListGamesResult;
 import results.RegisterResult;
 import requests.LoginRequest;
@@ -40,6 +42,12 @@ public class ServerFacade {
 
     public ListGamesResult listGames(String authToken) throws Exception {
         return makeRequest("GET", "/game", null, ListGamesResult.class, authToken);
+    }
+
+    public int createGame(String gameName, String authToken) throws Exception {
+        CreateGameRequest request = new CreateGameRequest(authToken, gameName);
+        var result = makeRequest("POST", "/game", request, CreateGameResult.class, authToken);
+        return result.gameID();
     }
 
     public void clear() throws Exception {

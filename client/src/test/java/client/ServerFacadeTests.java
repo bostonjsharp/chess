@@ -88,6 +88,17 @@ public class ServerFacadeTests {
         assertThrows(Exception.class, () -> facade.listGames("mis-token"));
     }
 
+    @Test
+    public void createGameSuccess() throws Exception{
+        AuthData auth = facade.register("bost6", "pass1", "test@test.com");
+        int gameID = facade.createGame("fair game", auth.authToken());
+        assertTrue(gameID > 0);
+    }
+
+    @Test
+    public void createGameFailure() {
+        assertThrows(Exception.class, () -> facade.createGame("big game", "not-token-well"));
+    }
 
 
 }
