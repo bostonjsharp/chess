@@ -41,6 +41,7 @@ public class ChessClient {
             };
         } else {
             return switch (lower) {
+                case "create" -> createGame();
                 case "logout" -> logout();
                 case "help" -> help();
                 case "quit" -> quit();
@@ -127,6 +128,10 @@ public class ChessClient {
                     """);
         } else {
             System.out.println("""
+                    create    (Create Game)
+                    list      (List Games)
+                    play      (Play Game)
+                    observe   (Observe Game)
                     logout    (Sign Out)
                     help      (Get Help)
                     quit      (Exit)

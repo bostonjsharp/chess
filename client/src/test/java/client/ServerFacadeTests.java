@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import model.AuthData;
 import org.junit.jupiter.api.*;
 import server.Server;
@@ -77,10 +78,12 @@ public class ServerFacadeTests {
     @Test
     public void listGamesSuccess() throws Exception{
         AuthData auth = facade.register("bost5", "pass", "gmail@test.com");
+        facade.createGame("game game", auth.authToken());
         var result = facade.listGames(auth.authToken());
 
         assertNotNull(result);
         assertNotNull(result.games());
+        assertEquals(1, result.games().size());
     }
 
     @Test
@@ -98,6 +101,22 @@ public class ServerFacadeTests {
     @Test
     public void createGameFailure() {
         assertThrows(Exception.class, () -> facade.createGame("big game", "not-token-well"));
+    }
+
+    @Test
+    public void joinGameSuccess() throws Exception {
+        AuthData auth = facade.register("bost7", "pass", "bost@bost.com");
+        int gameID = facade.createGame("right game", auth.authToken());
+
+        assertDoesNotThrow(() -> facade.joinGame(gameID, "WHITE", auth.authToken()));
+    }
+
+    @Test
+    public void joinGameFailure() throws Exception {
+        AuthData auth = facade. register("bost8", "in the past", "pas@bost.com");
+        int gameID = facade.createGame("very wrong game", auth.authToken());
+
+        assertThrows(Exception.class, () -> facade.joinGame(gameID, "BLACK", "not-good-token-time"));
     }
 
 
