@@ -62,6 +62,20 @@ public class ServerFacadeTests {
         assertThrows(Exception.class, () -> facade.login("bost", "bleh"));
     }
 
+    @Test
+    public void logoutSuccess() throws Exception {
+        AuthData auth = facade.register("bost", "pass", "test@gmail.com");
+
+        assertDoesNotThrow(() -> facade.logout(auth.authToken()));
+    }
+
+    @Test
+    public void logoutFailure() {
+        assertThrows(Exception.class, () -> facade.logout("token-imposter-among-us"));
+    }
+
+
+
 
 
 }
