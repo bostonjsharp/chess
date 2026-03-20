@@ -3,6 +3,7 @@ package client;
 import com.google.gson.Gson;
 import model.AuthData;
 import requests.RegisterRequest;
+import results.ListGamesResult;
 import results.RegisterResult;
 import requests.LoginRequest;
 import results.LoginResult;
@@ -35,6 +36,10 @@ public class ServerFacade {
 
     public void logout(String authToken) throws Exception {
         makeRequest("DELETE", "/session", null, null, authToken);
+    }
+
+    public ListGamesResult listGames(String authToken) throws Exception {
+        return makeRequest("GET", "/game", null, ListGamesResult.class, authToken);
     }
 
     public void clear() throws Exception {

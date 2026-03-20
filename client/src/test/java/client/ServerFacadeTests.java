@@ -41,30 +41,30 @@ public class ServerFacadeTests {
 
     @Test
     public void registerFailure() throws Exception {
-        facade.register("bost", "bost1", "test@gmail.com");
-        assertThrows(Exception.class, () -> facade.register("bost", "bost1", "test@gmail.com"));
+        facade.register("bost1", "bost1", "test@gmail.com");
+        assertThrows(Exception.class, () -> facade.register("bost1", "bost1", "test@gmail.com"));
     }
 
     @Test
     public void loginSuccess() throws Exception {
-        facade.register("bost", "bost1", "test@gmail.com");
-        AuthData auth = facade.login("bost", "bost1");
+        facade.register("bost2", "bost1", "test@gmail.com");
+        AuthData auth = facade.login("bost2", "bost1");
 
         assertNotNull(auth);
         assertNotNull(auth.authToken());
-        assertEquals("bost", auth.username());
+        assertEquals("bost2", auth.username());
     }
 
     @Test
     public void loginFailure() throws Exception {
-        facade.register("bost", "bost1", "test@gmail.com");
+        facade.register("bost3", "bost1", "test@gmail.com");
 
-        assertThrows(Exception.class, () -> facade.login("bost", "bleh"));
+        assertThrows(Exception.class, () -> facade.login("bost3", "bleh"));
     }
 
     @Test
     public void logoutSuccess() throws Exception {
-        AuthData auth = facade.register("bost", "pass", "test@gmail.com");
+        AuthData auth = facade.register("bost4", "pass", "test@gmail.com");
 
         assertDoesNotThrow(() -> facade.logout(auth.authToken()));
     }
@@ -74,7 +74,19 @@ public class ServerFacadeTests {
         assertThrows(Exception.class, () -> facade.logout("token-imposter-among-us"));
     }
 
+    @Test
+    public void listGamesSuccess() throws Exception{
+        AuthData auth = facade.register("bost5", "pass", "gmail@test.com");
+        var result = facade.listGames(auth.authToken());
 
+        assertNotNull(result);
+        assertNotNull(result.games());
+    }
+
+    @Test
+    public void listGamesFailure() {
+        assertThrows(Exception.class, () -> facade.listGames("mis-token"));
+    }
 
 
 
