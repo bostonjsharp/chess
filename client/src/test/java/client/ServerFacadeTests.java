@@ -45,6 +45,23 @@ public class ServerFacadeTests {
         assertThrows(Exception.class, () -> facade.register("bost", "bost1", "test@gmail.com"));
     }
 
+    @Test
+    public void loginSuccess() throws Exception {
+        facade.register("bost", "bost1", "test@gmail.com");
+        AuthData auth = facade.login("bost", "bost1");
+
+        assertNotNull(auth);
+        assertNotNull(auth.authToken());
+        assertEquals("bost", auth.username());
+    }
+
+    @Test
+    public void loginFailure() throws Exception {
+        facade.register("bost", "bost1", "test@gmail.com");
+
+        assertThrows(Exception.class, () -> facade.login("bost", "bleh"));
+    }
+
 
 
 }
