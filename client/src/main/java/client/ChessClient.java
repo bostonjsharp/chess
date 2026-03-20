@@ -6,6 +6,7 @@ public class ChessClient {
 
     private boolean running = true;
     private final Scanner scanner = new Scanner(System.in);
+    private final ServerFacade server = new ServerFacade("http://localhost:8080");
 
     public void run() {
         System.out.println("""
@@ -38,18 +39,26 @@ public class ChessClient {
     }
 
     private String register(){
-        String username = prompt("username");
-        String password = prompt("password");
-        String email = prompt("email");
-
-        return "to be implemented";
+        try {
+            String username = prompt("username");
+            String password = prompt("password");
+            String email = prompt("email");
+            var authData = server.register(username, password, email);
+            return "Registered and logged in as " + authData.username();
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
     }
 
     private String login() {
-        String username = prompt("username");
-        String password = prompt("password");
-
-        return "to be implemented";
+        try {
+            String username = prompt("username");
+            String password = prompt("password");
+            var authData = server.login(username, password);
+            return "Logged in as " + authData.username();
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
     }
 
     private void printMenu() {
