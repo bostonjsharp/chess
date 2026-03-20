@@ -26,13 +26,22 @@ public class ChessClient {
     public String eval(String input){
         String lower = input.trim().toLowerCase();
 
-        return switch(lower){
-            case "register" -> register();
-            case "login" -> login();
-            case "help" -> help();
-            case "quit" -> quit();
-            default -> "Unknown command, type help if needed.";
-        };
+        if (authToken == null) {
+            return switch (lower) {
+                case "register" -> register();
+                case "login" -> login();
+                case "help" -> help();
+                case "quit" -> quit();
+                default -> "Unknown command, type help if needed.";
+            };
+        } else {
+            return switch (lower) {
+                case "logout" -> logout();
+                case "help" -> help();
+                case "quit" -> quit();
+                default -> "Unknown command, type help if needed.";
+            };
+        }
     }
 
     private String prompt(String output) {
@@ -67,13 +76,33 @@ public class ChessClient {
         }
     }
 
+    private String logout() {
+        try{
+            server.logout(authToken);
+            authToken = null;
+            username = null;
+            return "Logged out. Goodbye!";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
     private void printMenu() {
-        System.out.println("""
-                register  (Create Account)
-                login     (Sign In)
-                help      (Get Help)
-                quit      (Exit)
-                """);
+        if (authToken == null) {
+            System.out.println("""
+                    register  (Create Account)
+                    login     (Sign In)
+                    help      (Get Help)
+                    quit      (Exit)
+                    """);
+        } else {
+            System.out.println("""
+                    logout    (Sign Out)
+                    help      (Get Help)
+                    quit      (Exit)
+                    """);
+
+        }
     }
 
     private String help() {
