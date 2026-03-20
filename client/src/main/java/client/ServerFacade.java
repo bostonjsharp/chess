@@ -33,6 +33,10 @@ public class ServerFacade {
         return new AuthData(result.authToken(), result.username());
     }
 
+    public void logout(String authToken) throws Exception {
+        makeRequest("DELETE", "/session", null, null, authToken);
+    }
+
     public void clear() throws Exception {
         makeRequest("DELETE", "/db", null, null, null);
     }
