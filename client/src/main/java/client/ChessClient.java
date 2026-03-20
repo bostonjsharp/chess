@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import model.GameData;
 
 import java.util.ArrayList;
@@ -19,12 +20,13 @@ public class ChessClient {
         System.out.println("""
                 ♔ Welcome to 240 Chess ♚
                 """);
-        printMenu();
         while(running) {
+            printMenu();
             System.out.print(">>> ");
             String input = scanner.nextLine();
             String result = eval(input);
             System.out.println(result);
+            System.out.println();
         }
     }
 
@@ -42,6 +44,9 @@ public class ChessClient {
         } else {
             return switch (lower) {
                 case "create" -> createGame();
+                case "list" -> listGames();
+                case "join" -> joinGame();
+                case "observe" -> observeGame();
                 case "logout" -> logout();
                 case "help" -> help();
                 case "quit" -> quit();
@@ -93,6 +98,16 @@ public class ChessClient {
         }
     }
 
+    private String createGame() {
+        try{
+            String gameName = prompt("game name");
+            int gameID = server.createGame(gameName, authToken);
+            return "Game created with ID " + gameID + "!";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
     private String listGames(){
         try {
             var result = server.listGames(authToken);
@@ -118,6 +133,46 @@ public class ChessClient {
         }
     }
 
+    private String joinGame() {
+        try{
+            if (listedGames.isEmpty()) {
+                return "No games listed :(";
+            }
+            int gameNumber = Integer.parseInt(prompt("game number"));
+            String colorChoice = prompt("White or Black?").toUpperCase();
+
+            if(gameNumber < 1 || gameNumber > listedGames.size()) {
+                return "Invalid game number...";
+            }
+            GameData chosenGame = listedGames.get(gameNumber - 1);
+            server.joinGame(chosenGame.gameID(), colorChoice, authToken);
+            return "Joined game " + chosenGame.gameName() + " as " + colorChoice + "!";
+        } catch (IllegalArgumentException e) {
+            return "Invalid color. Please use White or Black!";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String observeGame() {
+        try {
+            if (listedGames.isEmpty()) {
+                return "No games listed...";
+            }
+            int gameNumber = Integer.parseInt(prompt("game number"));
+            if (gameNumber < 1 || gameNumber > listedGames.size()) {
+                return "Invalid game number... Try again :(";
+            }
+
+            GameData chosenGame = listedGames.get(gameNumber - 1);
+            return "Observing game" + chosenGame.gameName() + "!";
+        } catch (NumberFormatException e) {
+            return "Invalid game number...  :(";
+        } catch (Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
     private void printMenu() {
         if (authToken == null) {
             System.out.println("""
@@ -130,7 +185,7 @@ public class ChessClient {
             System.out.println("""
                     create    (Create Game)
                     list      (List Games)
-                    play      (Play Game)
+                    join      (Join Game)
                     observe   (Observe Game)
                     logout    (Sign Out)
                     help      (Get Help)
