@@ -7,6 +7,8 @@ public class ChessClient {
     private boolean running = true;
     private final Scanner scanner = new Scanner(System.in);
     private final ServerFacade server = new ServerFacade("http://localhost:8080");
+    private String authToken = null;
+    private String username = null;
 
     public void run() {
         System.out.println("""
@@ -44,6 +46,8 @@ public class ChessClient {
             String password = prompt("password");
             String email = prompt("email");
             var authData = server.register(username, password, email);
+            this.authToken = authData.authToken();
+            this.username = authData.username();
             return "Registered and logged in as " + authData.username();
         } catch (Exception e) {
             return "Error: " + e.getMessage();
@@ -55,6 +59,8 @@ public class ChessClient {
             String username = prompt("username");
             String password = prompt("password");
             var authData = server.login(username, password);
+            this.authToken = authData.authToken();
+            this.username = authData.username();
             return "Logged in as " + authData.username();
         } catch (Exception e) {
             return "Error: " + e.getMessage();
