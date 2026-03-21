@@ -14,24 +14,27 @@ public class BoardPrinter {
         printColLabels(view);
 
         int startRow = (view == ChessGame.TeamColor.WHITE) ? 8 : 1;
-        int endRow = (view == ChessGame.TeamColor.WHITE) ? 0 : 9;
+        int endRow = (view == ChessGame.TeamColor.WHITE) ? 1 : 8;
         int rowStep = (view == ChessGame.TeamColor.WHITE) ? -1 : 1;
+        int startCol = (view == ChessGame.TeamColor.WHITE) ? 1 : 8;
+        int endCol = (view == ChessGame.TeamColor.WHITE) ? 8: 1;
+        int colStep = (view == ChessGame.TeamColor.WHITE) ? 1: -1;
 
-        for (int row = startRow; row != endRow; row += rowStep) {
+        for (int row = startRow; (rowStep > 0) ? row <= endRow : row>= endRow; row += rowStep) {
             System.out.print(SET_BG_COLOR_BLACK + SET_TEXT_COLOR_WHITE + " " + row + " ");
-            int startCol = (view == ChessGame.TeamColor.WHITE) ? 1 : 8;
-            int endCol = (view == ChessGame.TeamColor.WHITE) ? 9: 0;
-            int colStep = (view == ChessGame.TeamColor.WHITE) ? 1: -1;
-
-            for (int col = startCol; col != endCol; col += colStep){
+            for (int col = startCol;(colStep > 0) ? col <= endCol : col>= endCol; col += colStep){
                 boolean lightSquare = (row + col) % 2 == 1;
-                setSquareColor(lightSquare);
-                ChessPosition position = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(position);
-                printPiece(piece);
+                ChessPiece piece = board.getPiece(new ChessPosition(row,col));
+                printSquare(lightSquare, piece);
+                if (col == endCol){
+                    break;
+                }
             }
             System.out.print(SET_BG_COLOR_BLACK + SET_TEXT_COLOR_WHITE + " " + row + " ");
             System.out.println(RESET_BG_COLOR + RESET_TEXT_COLOR);
+            if(row == endRow){
+                break;
+            }
         }
         printColLabels(view);
         System.out.println(RESET_BG_COLOR + RESET_TEXT_COLOR);
@@ -52,25 +55,18 @@ public class BoardPrinter {
         System.out.println("   " + RESET_BG_COLOR + RESET_TEXT_COLOR);
     }
 
-    private void setSquareColor(boolean lightSquare) {
-        if (lightSquare) {
-            System.out.print(SET_BG_COLOR_LIGHT_GREY);
-        } else {
-            System.out.print(SET_BG_COLOR_DARK_GREY);
-        }
-    }
+    private void printSquare(boolean lightSquare, ChessPiece piece) {
+        String bg = lightSquare ? LIGHT_SQUARE : DARK_SQUARE;
+        System.out.print(bg);
 
-    private void printPiece(ChessPiece piece) {
         if (piece == null) {
-            System.out.print("   ");
+            System.out.print(EM_SPACE + " " + EM_SPACE);
             return;
         }
-        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE){
-            System.out.print(SET_TEXT_COLOR_WHITE);
-        } else {
-            System.out.print(SET_TEXT_COLOR_BLACK);
-        }
-        System.out.print(" " + getPieceSymbol(piece) + " ");
+        String textColor = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_PIECE_COLOR : BLACK_PIECE_COLOR;
+        System.out.print(textColor);
+        System.out.print(EM_SPACE + getPieceSymbol(piece) + EM_SPACE);
+        System.out.print(RESET_TEXT_COLOR);
     }
 
     private String getPieceSymbol(ChessPiece piece) {
