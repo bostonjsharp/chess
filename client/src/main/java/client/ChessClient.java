@@ -102,6 +102,7 @@ public class ChessClient {
         try{
             String gameName = prompt("game name");
             int gameID = server.createGame(gameName, authToken);
+            listedGames = new ArrayList<>(server.listGames(authToken).games());
             return "Game created with ID " + gameID + "!";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
