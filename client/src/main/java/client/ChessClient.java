@@ -145,7 +145,10 @@ public class ChessClient {
                 return "Invalid game number...";
             }
             GameData chosenGame = listedGames.get(gameNumber - 1);
+            ChessGame.TeamColor color = ChessGame.TeamColor.valueOf(colorChoice);
             server.joinGame(chosenGame.gameID(), colorChoice, authToken);
+            BoardPrinter printer = new BoardPrinter();
+            printer.drawBoard(chosenGame.game(), color);
             return "Joined game " + chosenGame.gameName() + " as " + colorChoice + "!";
         } catch (IllegalArgumentException e) {
             return "Invalid color. Please use White or Black!";
@@ -165,6 +168,8 @@ public class ChessClient {
             }
 
             GameData chosenGame = listedGames.get(gameNumber - 1);
+            BoardPrinter printer = new BoardPrinter();
+            printer.drawBoard(chosenGame.game(), ChessGame.TeamColor.WHITE);
             return "Observing game" + chosenGame.gameName() + "!";
         } catch (NumberFormatException e) {
             return "Invalid game number...  :(";
