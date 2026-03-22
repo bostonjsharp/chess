@@ -37,13 +37,13 @@ public class SqlAuthDAOTest {
 
     @Test
     public void getAuthSuccess() {
-        AuthData auth = new AuthData("token1", "bost");
+        AuthData auth = new AuthData("token2", "bost1");
         authDAO.createAuth(auth);
-        AuthData result = authDAO.getAuth("token1");
+        AuthData result = authDAO.getAuth("token2");
 
         assertNotNull(result);
-        assertEquals("token1", result.authToken());
-        assertEquals("bost", result.username());
+        assertEquals("token2", result.authToken());
+        assertEquals("bost1", result.username());
     }
 
     @Test
