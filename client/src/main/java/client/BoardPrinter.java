@@ -60,23 +60,23 @@ public class BoardPrinter {
         System.out.print(bg);
 
         if (piece == null) {
-            System.out.print(EM_SPACE + " " + EM_SPACE);
+            System.out.print("   ");
             return;
         }
         String textColor = (piece.getTeamColor() == ChessGame.TeamColor.WHITE) ? WHITE_PIECE_COLOR : BLACK_PIECE_COLOR;
         System.out.print(textColor);
-        System.out.print(EM_SPACE + getPieceSymbol(piece) + EM_SPACE);
+        System.out.print(" " + getPieceSymbol(piece) + " ");
         System.out.print(RESET_TEXT_COLOR);
     }
 
     private String getPieceSymbol(ChessPiece piece) {
         return switch (piece.getPieceType()) {
-            case KING -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_KING : BLACK_KING;
-            case QUEEN -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_QUEEN : BLACK_QUEEN;
-            case BISHOP -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_BISHOP : BLACK_BISHOP;
-            case KNIGHT -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_KNIGHT : BLACK_KNIGHT;
-            case ROOK -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_ROOK : BLACK_ROOK;
-            case PAWN -> piece.getTeamColor() == ChessGame.TeamColor.WHITE ? WHITE_PAWN : BLACK_PAWN;
+            case KING -> "K";
+            case QUEEN -> "Q";
+            case BISHOP -> "B";
+            case KNIGHT -> "N";
+            case ROOK -> "R";
+            case PAWN -> "P";
         };
     }
 }

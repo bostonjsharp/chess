@@ -10,6 +10,7 @@ import java.util.Scanner;
 public class ChessClient {
 
     private boolean running = true;
+    private boolean inGame = false;
     private final Scanner scanner = new Scanner(System.in);
     private final ServerFacade server = new ServerFacade("http://localhost:8080");
     private String authToken = null;
@@ -21,7 +22,11 @@ public class ChessClient {
                 ♔ Welcome to 240 Chess ♚
                 """);
         while(running) {
-            printMenu();
+            if (!inGame){
+                printMenu();
+            } else {
+                printGameMenu();
+            }
             System.out.print(">>> ");
             String input = scanner.nextLine();
             String result = eval(input);
@@ -33,6 +38,14 @@ public class ChessClient {
     public String eval(String input){
         String lower = input.trim().toLowerCase();
 
+
+        if (inGame) {
+            return switch (lower){
+                case "leave" -> leaveGame();
+                case "help" -> gameHelp();
+                default -> "Unknown command, type help if needed.";
+            };
+        }
         if (authToken == null) {
             return switch (lower) {
                 case "register" -> register();
@@ -150,6 +163,7 @@ public class ChessClient {
             server.joinGame(chosenGame.gameID(), colorChoice, authToken);
             BoardPrinter printer = new BoardPrinter();
             printer.drawBoard(chosenGame.game(), color);
+            inGame = true;
             return "Joined game " + chosenGame.gameName() + " as " + colorChoice + "!";
         } catch (IllegalArgumentException e) {
             return "Invalid color. Please use White or Black!";
@@ -171,12 +185,25 @@ public class ChessClient {
             GameData chosenGame = listedGames.get(gameNumber - 1);
             BoardPrinter printer = new BoardPrinter();
             printer.drawBoard(chosenGame.game(), ChessGame.TeamColor.WHITE);
-            return "Observing game" + chosenGame.gameName() + "!";
+            inGame = true;
+            return "Observing game " + chosenGame.gameName() + "!";
         } catch (NumberFormatException e) {
             return "Invalid game number...  :(";
         } catch (Exception e) {
             return "Error: " + e.getMessage();
         }
+    }
+
+    private String leaveGame() {
+        inGame = false;
+        return "Left the game.";
+    }
+
+    private String gameHelp() {
+        return """
+                leave  -leave the current game
+                help   -show this help message
+                """;
     }
 
     private void printMenu() {
@@ -199,6 +226,13 @@ public class ChessClient {
                     """);
 
         }
+    }
+
+    private void printGameMenu() {
+        System.out.println("""
+                leave     (Leave Game)
+                help      (Get Help)
+                """);
     }
 
     private String help() {

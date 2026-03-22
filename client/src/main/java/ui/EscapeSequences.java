@@ -9,8 +9,8 @@ public class EscapeSequences {
     private static final String ANSI_ESCAPE = "\033";
     public static final String EM_SPACE = "\u2003";
 
-    public static final String DARK_SQUARE = "\u001b[48;5;94m";
-    public static final String LIGHT_SQUARE = "\u001b[48;5;230m";
+    public static final String DARK_SQUARE = "\u001B[48;2;93;127;163m";
+    public static final String LIGHT_SQUARE = "\u001B[48;2;200;200;200m";
     public static final String WHITE_PIECE_COLOR = "\u001b[38;5;255m";
     public static final String BLACK_PIECE_COLOR = "\u001b[38;5;16m";
 
