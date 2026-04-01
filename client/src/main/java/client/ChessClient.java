@@ -83,7 +83,7 @@ public class ChessClient {
             this.username = authData.username();
             return "Registered and logged in as " + authData.username();
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
@@ -96,7 +96,7 @@ public class ChessClient {
             this.username = authData.username();
             return "Logged in as " + authData.username();
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
@@ -107,7 +107,7 @@ public class ChessClient {
             username = null;
             return "Logged out. Goodbye!";
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
@@ -116,9 +116,9 @@ public class ChessClient {
             String gameName = prompt("game name");
             int gameID = server.createGame(gameName, authToken);
             listedGames = new ArrayList<>(server.listGames(authToken).games());
-            return "Game created with ID " + gameID + "!";
+            return "Game created!";
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
@@ -143,7 +143,7 @@ public class ChessClient {
             }
             return out.toString();
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
@@ -166,9 +166,9 @@ public class ChessClient {
             inGame = true;
             return "Joined game " + chosenGame.gameName() + " as " + colorChoice + "!";
         } catch (IllegalArgumentException e) {
-            return "Invalid color. Please use White or Black!";
+            return "Invalid entry... Please try again!";
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
@@ -190,7 +190,7 @@ public class ChessClient {
         } catch (NumberFormatException e) {
             return "Invalid game number...  :(";
         } catch (Exception e) {
-            return "Error: " + e.getMessage();
+            return e.getMessage();
         }
     }
 
