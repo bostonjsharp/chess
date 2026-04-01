@@ -6,6 +6,8 @@ import io.javalin.*;
 import service.*;
 import com.google.gson.Gson;
 
+import java.net.http.WebSocket;
+
 public class Server {
 
     private final Javalin javalin;
@@ -43,6 +45,9 @@ public class Server {
 
         JoinGameService joinGameService = new JoinGameService(authDAO, gameDAO);
         JoinGameHandler joinGameHandler = new JoinGameHandler(joinGameService);
+
+        ConnectionManager connectionManager = new ConnectionManager();
+        WebSocketHandler webSocketHandler = new WebSocketHandler(authDAO, gameDAO, connectionManager);
 
         javalin.post("/user", registerHandler::register);
         javalin.delete("/db", clearHandler::clear);
