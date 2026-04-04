@@ -21,6 +21,11 @@ public class ChessClient implements ServerMessageObserver{
     private String authToken = null;
     private String username = null;
     private List<GameData> listedGames = new ArrayList<>();
+    private WebSocketCommunicator webSocketCommunicator;
+    private ChessGame currentGame = null;
+    private Integer currentGameID = null;
+    private ChessGame.TeamColor currentPlayerColor = null;
+    private final Gson gson = new Gson();
 
     public void run() {
         System.out.println("""
@@ -203,6 +208,26 @@ public class ChessClient implements ServerMessageObserver{
         inGame = false;
         return "Left the game.";
     }
+
+    public void notify(ServerMessage message, String messageText){
+        switch (message.getServerMessageType()) {
+            case LOAD_GAME -> {
+                LoadGameMessage loadGameMessage = gson.fromJson(messageText, LoadGameMessage.class);
+                currentGame = loadGameMessage.getGame();
+                drawCurrentBoard();
+            }
+            case NOTIFICATION -> {
+                NotificationMessage notificationMessage = gson.fromJson(messageText, NotificationMessage.class);
+                System.out.println(notificationMessage.getMessage());
+            }
+            case ERROR -> {
+                ErrorMessage errorMessage = gson.fromJson(messageText, ErrorMessage.class);
+                System.out.println(errorMessage.getErrorMessage());
+            }
+        }
+    }
+
+    
 
     private String gameHelp() {
         return """
