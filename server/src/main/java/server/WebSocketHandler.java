@@ -67,9 +67,7 @@ public class WebSocketHandler {
                 notification = username + " joined the game as an observer";
             }
             NotificationMessage notificationMessage = new NotificationMessage(notification);
-            connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notification));
-        } catch (DataAccessException e) {
-            sendError(context, e.getMessage());
+            connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
         } catch (Exception e) {
             sendError(context, e.getMessage());
         }
