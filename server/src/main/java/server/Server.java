@@ -4,9 +4,6 @@ import dataaccess.*;
 import handler.*;
 import io.javalin.*;
 import service.*;
-import com.google.gson.Gson;
-
-import java.net.http.WebSocket;
 
 public class Server {
 
@@ -56,7 +53,10 @@ public class Server {
         javalin.get("/game", listGamesHandler::listGames);
         javalin.post("/game", createGameHandler::createGame);
         javalin.put("/game", joinGameHandler::joinGame);
-        javalin.ws("/ws", webSocketHandler);
+        javalin.ws("/ws", ws -> {
+            ws.onMessage(webSocketHandler::onMessage);
+            ws.onClose(webSocketHandler::onClose);
+        });
     }
 
     public int run(int desiredPort) {
