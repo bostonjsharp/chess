@@ -34,8 +34,6 @@ public class ChessClient implements ServerMessageObserver{
         while(running) {
             if (!inGame){
                 printMenu();
-            } else {
-                printGameMenu();
             }
             System.out.print(">>> ");
             String input = scanner.nextLine();
@@ -246,6 +244,8 @@ public class ChessClient implements ServerMessageObserver{
         } else{
             printer.drawBoard(currentGame, ChessGame.TeamColor.WHITE);
         }
+
+        printGameMenu();
     }
 
     private void connectGame(int gameID, ChessGame.TeamColor color) throws Exception{
