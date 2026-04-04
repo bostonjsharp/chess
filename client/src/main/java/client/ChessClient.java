@@ -2,12 +2,17 @@ package client;
 
 import chess.ChessGame;
 import model.GameData;
-
+import com.google.gson.Gson;
+import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
+import websocket.messages.NotificationMessage;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.ServerMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class ChessClient {
+public class ChessClient implements ServerMessageObserver{
 
     private boolean running = true;
     private boolean inGame = false;
