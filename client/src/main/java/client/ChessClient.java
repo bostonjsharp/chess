@@ -227,7 +227,26 @@ public class ChessClient implements ServerMessageObserver{
         }
     }
 
-    
+    private void drawCurrentBoard(){
+        if(currentGame == null){
+            return;
+        }
+        BoardPrinter printer = new BoardPrinter();
+
+        if(currentPlayerColor == ChessGame.TeamColor.BLACK){
+            printer.drawBoard(currentGame, ChessGame.TeamColor.BLACK);
+        } else{
+            printer.drawBoard(currentGame, ChessGame.TeamColor.WHITE);
+        }
+    }
+
+    private void connectGame(int gameID, ChessGame.TeamColor color) throws Exception{
+        currentGameID = gameID;
+        currentPlayerColor = color;
+        webSocketCommunicator = new WebSocketCommunicator("http://localhost:8080", this);
+        UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+        webSocketCommunicator.sendCommand(connectCommand);
+    }
 
     private String gameHelp() {
         return """
