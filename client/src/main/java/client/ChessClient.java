@@ -171,8 +171,7 @@ public class ChessClient implements ServerMessageObserver{
             GameData chosenGame = listedGames.get(gameNumber - 1);
             ChessGame.TeamColor color = ChessGame.TeamColor.valueOf(colorChoice);
             server.joinGame(chosenGame.gameID(), colorChoice, authToken);
-            BoardPrinter printer = new BoardPrinter();
-            printer.drawBoard(chosenGame.game(), color);
+            connectGame(chosenGame.gameID(), color);
             inGame = true;
             return "Joined game " + chosenGame.gameName() + " as " + colorChoice + "!";
         } catch (IllegalArgumentException e) {
@@ -193,8 +192,7 @@ public class ChessClient implements ServerMessageObserver{
             }
 
             GameData chosenGame = listedGames.get(gameNumber - 1);
-            BoardPrinter printer = new BoardPrinter();
-            printer.drawBoard(chosenGame.game(), ChessGame.TeamColor.WHITE);
+            connectGame(chosenGame.gameID(), null);
             inGame = true;
             return "Observing game " + chosenGame.gameName() + "!";
         } catch (NumberFormatException e) {
@@ -205,7 +203,17 @@ public class ChessClient implements ServerMessageObserver{
     }
 
     private String leaveGame() {
+        try{
+            if(webSocketCommunicator != null) {
+                webSocketCommunicator.close();
+            }
+        } catch (Exception e) {
+            return e.getMessage();
+        }
         inGame = false;
+        currentGame = null;
+        currentPlayerColor = null;
+        webSocketCommunicator = null;
         return "Left the game.";
     }
 
