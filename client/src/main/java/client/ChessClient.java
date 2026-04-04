@@ -203,6 +203,8 @@ public class ChessClient implements ServerMessageObserver{
     private String leaveGame() {
         try{
             if(webSocketCommunicator != null) {
+                UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, currentGameID);
+                webSocketCommunicator.sendCommand(leaveCommand);
                 webSocketCommunicator.close();
             }
         } catch (Exception e) {
