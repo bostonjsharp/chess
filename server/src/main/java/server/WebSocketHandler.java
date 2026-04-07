@@ -8,6 +8,7 @@ import model.GameData;
 import model.AuthData;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsMessageContext;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
@@ -28,10 +29,13 @@ public class WebSocketHandler {
     public void onMessage(WsMessageContext context){
         try{
             UserGameCommand command = gson.fromJson(context.message(), UserGameCommand.class);
-            if(command.getCommandType() == UserGameCommand.CommandType.CONNECT){
-                connect(context, command);
-            } else if (command.getCommandType() == UserGameCommand.CommandType.LEAVE){
-                leave(context, command);
+            switch (command.getCommandType()){
+                case CONNECT -> connect(context, command);
+                case LEAVE -> leave(context, command);
+                case MAKE_MOVE -> {
+                    MakeMoveCommand moveCommand = gson.fromJson(context.message(), MakeMoveCommand.class);
+                    makeMove(context, moveCommand);
+                }
             }
         } catch (Exception e) {
             sendError(context, e.getMessage());
@@ -110,6 +114,24 @@ public class WebSocketHandler {
             connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
         } catch (Exception e){
             sendError(context, e.getMessage());
+        }
+    }
+
+    private void makeMove(WsMessageContext context, MakeMoveCommand command){
+        try{
+            var authData = authDAO.getAuth(command.getAuthToken());
+            if(authData == null){
+                sendError(context, "invalid auth token");
+                return;
+            }
+            var gameData = gameDAO.getGame(command.getGameID());
+            if(gameData == null){
+                sendError(context, "game not found");
+                return;
+            }
+            String username = authData.username();
+            String role = getRole(gameData, username);
+            
         }
     }
 
