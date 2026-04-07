@@ -30,6 +30,8 @@ public class WebSocketHandler {
             UserGameCommand command = gson.fromJson(context.message(), UserGameCommand.class);
             if(command.getCommandType() == UserGameCommand.CommandType.CONNECT){
                 connect(context, command);
+            } else if (command.getCommandType() == UserGameCommand.CommandType.LEAVE){
+                leave(context, command);
             }
         } catch (Exception e) {
             sendError(context, e.getMessage());
@@ -58,17 +60,55 @@ public class WebSocketHandler {
             LoadGameMessage loadGameMessage = new LoadGameMessage(gameData.game());
             context.send(gson.toJson(loadGameMessage));
             String notification;
+            String white = gameData.whiteUsername();
+            String black = gameData.blackUsername();
 
             if(role.equals("WHITE")){
+                white = null;
                 notification = username + " joined the game as White";
             } else if (role.equals("BLACK")){
+                black = null;
                 notification = username + " joined the game as Black";
             } else {
                 notification = username + " joined the game as an observer";
             }
+            if (role.equals("WHITE") || role.equals("BLACK")){
+                GameData newGame = new GameData(gameData.gameID(), white, black, gameData.gameName(), gameData.game());
+                gameDAO.updateGame(newGame);
+            }
             NotificationMessage notificationMessage = new NotificationMessage(notification);
             connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
         } catch (Exception e) {
+            sendError(context, e.getMessage());
+        }
+    }
+
+    private void leave(WsMessageContext context, UserGameCommand command){
+        try{
+            var authData = authDAO.getAuth(command.getAuthToken());
+            if(authData == null){
+                sendError(context, "invalid auth token");
+                return;
+            }
+            var gameData = gameDAO.getGame(command.getGameID());
+            if(gameData == null){
+                sendError(context, "game not found");
+                return;
+            }
+            String username = authData.username();
+            String role = getRole(gameData, username);
+            connectionManager.remove(command.getGameID(), context.session);
+
+            NotificationMessage notificationMessage;
+            if(role.equals("WHITE")){
+                notificationMessage = new NotificationMessage(username + " has left the game as white");
+            } else if (role.equals("BLACK")){
+                notificationMessage = new NotificationMessage(username + " has left the game as black");
+            } else {
+                notificationMessage = new NotificationMessage(username + " stopped observing the game");
+            }
+            connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
+        } catch (Exception e){
             sendError(context, e.getMessage());
         }
     }
