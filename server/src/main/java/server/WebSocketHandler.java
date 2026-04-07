@@ -1,5 +1,6 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -89,12 +90,12 @@ public class WebSocketHandler {
 
     private void leave(WsMessageContext context, UserGameCommand command){
         try{
-            var authData = authDAO.getAuth(command.getAuthToken());
+            AuthData authData = authDAO.getAuth(command.getAuthToken());
             if(authData == null){
                 sendError(context, "invalid auth token");
                 return;
             }
-            var gameData = gameDAO.getGame(command.getGameID());
+            GameData gameData = gameDAO.getGame(command.getGameID());
             if(gameData == null){
                 sendError(context, "game not found");
                 return;
@@ -119,19 +120,49 @@ public class WebSocketHandler {
 
     private void makeMove(WsMessageContext context, MakeMoveCommand command){
         try{
-            var authData = authDAO.getAuth(command.getAuthToken());
+            AuthData authData = authDAO.getAuth(command.getAuthToken());
             if(authData == null){
                 sendError(context, "invalid auth token");
                 return;
             }
-            var gameData = gameDAO.getGame(command.getGameID());
+            GameData gameData = gameDAO.getGame(command.getGameID());
             if(gameData == null){
                 sendError(context, "game not found");
                 return;
             }
             String username = authData.username();
             String role = getRole(gameData, username);
+            ChessGame game = gameData.game();
+
+            if(role.equals("OBSERVER")){
+                sendError(context, "Observers can't make moves");
+                return;
+            }
+            if(role.equals("WHITE") && game.getTeamTurn() != ChessGame.TeamColor.WHITE){
+                sendError(context ,"Not your turn");
+                return;
+            }
+            if(role.equals("BLACK") && game.getTeamTurn() != ChessGame.TeamColor.BLACK){
+                sendError(context, "not your turn");
+                return;
+            }
+            game.makeMove(command.getMove());
+            GameData newGame = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+            gameDAO.updateGame(newGame);
+            LoadGameMessage loadGameMessage = new LoadGameMessage(game);
+            connectionManager.broadcast(command.getGameID(), gson.toJson(loadGameMessage));
+            String notification;
+            if(role.equals("WHITE")){
+                notification = username + " made a move as White!";
+            } else {
+                notification = username + " made a move as Black!";
+            }
+
+            NotificationMessage notificationMessage = new NotificationMessage(notification);
+            connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
             
+        } catch (Exception e) {
+            sendError(context, e.getMessage());
         }
     }
 
