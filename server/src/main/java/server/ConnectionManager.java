@@ -30,4 +30,15 @@ public class ConnectionManager {
             }
         }
     }
+
+    public void broadcast(Integer gameID, String message) throws IOException {
+        var gameConnections = connections.get(gameID);
+        if(gameConnections!= null){
+            for(var connection: gameConnections){
+                if(connection.session().isOpen()){
+                    connection.session().getRemote().sendString(message);
+                }
+            }
+        }
+    }
 }

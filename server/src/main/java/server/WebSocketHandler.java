@@ -160,7 +160,7 @@ public class WebSocketHandler {
 
             NotificationMessage notificationMessage = new NotificationMessage(notification);
             connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
-            
+
         } catch (Exception e) {
             sendError(context, e.getMessage());
         }
