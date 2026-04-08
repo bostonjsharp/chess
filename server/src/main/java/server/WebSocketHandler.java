@@ -3,9 +3,9 @@ package server;
 import chess.ChessGame;
 import chess.ChessPiece;
 import chess.ChessPosition;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
 import dataaccess.GameDAO;
 import model.GameData;
 import model.AuthData;
@@ -152,6 +152,8 @@ public class WebSocketHandler {
             connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
             broadcastGameStatus(gameData, game, teamTurn);
 
+        } catch (InvalidMoveException e) {
+            sendError(context, e.getMessage());
         } catch (Exception e) {
             sendError(context, e.getMessage());
         }
