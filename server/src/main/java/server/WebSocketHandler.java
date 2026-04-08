@@ -1,6 +1,8 @@
 package server;
 
 import chess.ChessGame;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
@@ -114,12 +116,7 @@ public class WebSocketHandler {
                 sendError(context, "Game is over!");
                 return;
             }
-            ChessGame.TeamColor playerColor = null;
-            if(username.equals(gameData.whiteUsername())){
-                playerColor = ChessGame.TeamColor.WHITE;
-            } else if (username.equals(gameData.blackUsername())){
-                playerColor = ChessGame.TeamColor.BLACK;
-            }
+            ChessGame.TeamColor playerColor = getPlayerColor(gameData, username);
             if (playerColor == null) {
                 sendError(context, "Observers can't make moves...");
                 return;
@@ -130,12 +127,21 @@ public class WebSocketHandler {
             }
 
             game.makeMove(command.getMove());
+            ChessGame.TeamColor opponent = (playerColor == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            if(game.isInCheckmate(opponent) || game.isInStalemate(opponent)){
+                game.setGameOver(true);
+            }
             GameData newGame = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
             gameDAO.updateGame(newGame);
             LoadGameMessage loadGameMessage = new LoadGameMessage(game);
             connectionManager.broadcast(command.getGameID(), gson.toJson(loadGameMessage));
-            String notification = username +" made a move";
-            NotificationMessage notificationMessage = new NotificationMessage(notification);
+            String moveText = username + " moved from " + toChessNotation(command.getMove().getStartPosition())
+                     + " to " + toChessNotation(command.getMove().getEndPosition());
+
+            if(command.getMove().getPromotionPiece() != null){
+                moveText += " promoting to " + command.getMove().getPromotionPiece();
+            }
+            NotificationMessage notificationMessage = new NotificationMessage(moveText);
             connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
 
         } catch (Exception e) {
@@ -153,12 +159,7 @@ public class WebSocketHandler {
             String username = commandContext.username();
             ChessGame game = gameData.game();
 
-            ChessGame.TeamColor playerColor = null;
-            if (username.equals((gameData.whiteUsername()))){
-                playerColor = ChessGame.TeamColor.WHITE;
-            } else if (username.equals(gameData.blackUsername())){
-                playerColor = ChessGame.TeamColor.BLACK;
-            }
+            ChessGame.TeamColor playerColor = getPlayerColor(gameData, username);
 
             if(playerColor == null){
                 sendError(context, "Observers can't resign...");
@@ -198,6 +199,21 @@ public class WebSocketHandler {
     private void sendError(WsMessageContext context, String error){
         ErrorMessage errorMessage = new ErrorMessage(error);
         context.send(gson.toJson(errorMessage));
+    }
+
+    private ChessGame.TeamColor getPlayerColor(GameData gameData, String username){
+        if (username.equals((gameData.whiteUsername()))){
+            return ChessGame.TeamColor.WHITE;
+        } else if (username.equals(gameData.blackUsername())){
+            return ChessGame.TeamColor.BLACK;
+        }
+        return null;
+    }
+
+    private String toChessNotation(ChessPosition position){
+        char col = (char) ('a' + position.getColumn() -1);
+        int row = position.getRow();
+        return "" + col + row;
     }
 
     private CommandContext getCommandContext(WsMessageContext context, UserGameCommand command) {

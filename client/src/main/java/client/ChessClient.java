@@ -305,6 +305,10 @@ public class ChessClient implements ServerMessageObserver{
             if (webSocketCommunicator == null || currentGameID == null){
                 return "You aren't currently in a game...";
             }
+            String confirmation = prompt("Are you sure you want to resign? This cannot be undone. (y/n)").trim().toLowerCase();
+            if(!confirmation.equals("y")){
+                return "Resignation cancelled";
+            }
             UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID);
             webSocketCommunicator.sendCommand(resignCommand);
             return "Resignation sent!";
