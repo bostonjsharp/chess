@@ -1,6 +1,9 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPiece;
+import chess.ChessPosition;
 import model.GameData;
 import com.google.gson.Gson;
 import websocket.commands.UserGameCommand;
@@ -8,6 +11,7 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.NotificationMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.ServerMessage;
+import websocket.commands.MakeMoveCommand;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -44,18 +48,24 @@ public class ChessClient implements ServerMessageObserver{
     }
 
     public String eval(String input){
-        String lower = input.trim().toLowerCase();
+        String trimmed = input.trim();
+        if (trimmed.isEmpty()){
+            return "Unknown command, please type help if needed!";
+        }
+        String[] parts = trimmed.split("\\s+");
+        String command = parts[0].toLowerCase();
 
 
         if (inGame) {
-            return switch (lower){
+            return switch (command){
+                case "move" -> makeMove(parts);
                 case "leave" -> leaveGame();
                 case "help" -> gameHelp();
                 default -> "Unknown command, type help if needed.";
             };
         }
         if (authToken == null) {
-            return switch (lower) {
+            return switch (command) {
                 case "register" -> register();
                 case "login" -> login();
                 case "help" -> help();
@@ -63,7 +73,7 @@ public class ChessClient implements ServerMessageObserver{
                 default -> "Unknown command, type help if needed.";
             };
         } else {
-            return switch (lower) {
+            return switch (command) {
                 case "create" -> createGame();
                 case "list" -> listGames();
                 case "join" -> joinGame();
@@ -213,6 +223,7 @@ public class ChessClient implements ServerMessageObserver{
         inGame = false;
         currentGame = null;
         currentPlayerColor = null;
+        currentGameID = null;
         webSocketCommunicator = null;
         return "Left the game.";
     }
@@ -258,10 +269,61 @@ public class ChessClient implements ServerMessageObserver{
         webSocketCommunicator.sendCommand(connectCommand);
     }
 
+    private String makeMove(String[] parts){
+        try{
+            if(webSocketCommunicator == null || currentGameID == null){
+                return "You're not currently in a game, sorry!";
+            }
+            if (parts.length < 3 || parts.length > 4){
+                return "Must be in this form: move <start> <end> [promotion]";
+            }
+
+            ChessPosition start = parsePosition(parts[1]);
+            ChessPosition end = parsePosition(parts[2]);
+            ChessPiece.PieceType promotion = null;
+            if (parts.length == 4){
+                promotion = parsePromotionPiece(parts[3]);
+            }
+
+            ChessMove move = new ChessMove(start, end, promotion);
+            MakeMoveCommand command = new MakeMoveCommand(authToken, currentGameID, move);
+            webSocketCommunicator.sendCommand(command);
+            return "";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    private ChessPosition parsePosition(String input){
+        if(input == null || input.length() != 2){
+            throw new IllegalArgumentException("Invalid position... Please use a format like d5");
+        }
+        char cols = Character.toLowerCase(input.charAt(0));
+        char rows = input.charAt(1);
+
+        if(cols < 'a' || cols > 'h' || rows < '1' || rows > '8'){
+            throw new IllegalArgumentException("Invalid position... Please use a format like d5");
+        }
+        int actualCol = cols - 'a' + 1;
+        int actualRow = rows - '0';
+        return new ChessPosition(actualRow, actualCol);
+    }
+
+    private ChessPiece.PieceType parsePromotionPiece(String input) {
+        return switch (input.toLowerCase()){
+            case "queen", "q" -> ChessPiece.PieceType.QUEEN;
+            case "rook", "r" -> ChessPiece.PieceType.ROOK;
+            case "bishop", "b" -> ChessPiece.PieceType.BISHOP;
+            case "knight", "n" -> ChessPiece.PieceType.KNIGHT;
+            default -> throw new IllegalArgumentException("Invalid promotion piece...");
+        };
+    }
+
     private String gameHelp() {
         return """
-                leave  -leave the current game
-                help   -show this help message
+                move <start> <end> [promotion]  -make a move
+                leave                           -leave the current game
+                help                            -show this help message
                 """;
     }
 
@@ -289,8 +351,9 @@ public class ChessClient implements ServerMessageObserver{
 
     private void printGameMenu() {
         System.out.println("""
-                leave     (Leave Game)
-                help      (Get Help)
+                move <start> <end> [promotion]      (Make a Move)
+                help                                (Get Help)
+                leave                               (Leave Game)
                 """);
     }
 

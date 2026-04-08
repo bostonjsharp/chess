@@ -20,6 +20,7 @@ public class WebSocketHandler {
     private final GameDAO gameDAO;
     private final ConnectionManager connectionManager;
     private final Gson gson = new Gson();
+    private record CommandContext(AuthData authData, GameData gameData, String username, ChessGame game){}
 
     public WebSocketHandler(AuthDAO authDAO, GameDAO gameDAO, ConnectionManager connectionManager){
         this.authDAO = authDAO;
@@ -37,6 +38,7 @@ public class WebSocketHandler {
                     MakeMoveCommand moveCommand = gson.fromJson(context.message(), MakeMoveCommand.class);
                     makeMove(context, moveCommand);
                 }
+                case RESIGN -> resign(context, command);
             }
         } catch (Exception e) {
             sendError(context, e.getMessage());
@@ -48,38 +50,24 @@ public class WebSocketHandler {
     }
     private void connect(WsMessageContext context, UserGameCommand command){
         try{
-            AuthData authData = authDAO.getAuth(command.getAuthToken());
-            if(authData == null){
-                sendError(context, "invalid auth token");
+            CommandContext commandContext = getCommandContext(context, command);
+            if (commandContext == null){
                 return;
             }
-            GameData gameData = gameDAO.getGame(command.getGameID());
-            if(gameData == null) {
-                sendError(context,"Game Not Found...");
-                return;
-            }
-
-            String username = authData.username();
+            GameData gameData = commandContext.gameData();
+            String username = commandContext.username();
             String role = getRole(gameData,username);
             connectionManager.add(command.getGameID(), username, context.session);
             LoadGameMessage loadGameMessage = new LoadGameMessage(gameData.game());
             context.send(gson.toJson(loadGameMessage));
             String notification;
-            String white = gameData.whiteUsername();
-            String black = gameData.blackUsername();
 
             if(role.equals("WHITE")){
-                white = null;
                 notification = username + " joined the game as White";
             } else if (role.equals("BLACK")){
-                black = null;
                 notification = username + " joined the game as Black";
             } else {
                 notification = username + " joined the game as an observer";
-            }
-            if (role.equals("WHITE") || role.equals("BLACK")){
-                GameData newGame = new GameData(gameData.gameID(), white, black, gameData.gameName(), gameData.game());
-                gameDAO.updateGame(newGame);
             }
             NotificationMessage notificationMessage = new NotificationMessage(notification);
             connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
@@ -90,17 +78,12 @@ public class WebSocketHandler {
 
     private void leave(WsMessageContext context, UserGameCommand command){
         try{
-            AuthData authData = authDAO.getAuth(command.getAuthToken());
-            if(authData == null){
-                sendError(context, "invalid auth token");
+            CommandContext commandContext = getCommandContext(context, command);
+            if (commandContext == null){
                 return;
             }
-            GameData gameData = gameDAO.getGame(command.getGameID());
-            if(gameData == null){
-                sendError(context, "game not found");
-                return;
-            }
-            String username = authData.username();
+            String username = commandContext.username();
+            GameData gameData = commandContext.gameData();
             String role = getRole(gameData, username);
             connectionManager.remove(command.getGameID(), context.session);
 
@@ -120,48 +103,80 @@ public class WebSocketHandler {
 
     private void makeMove(WsMessageContext context, MakeMoveCommand command){
         try{
-            AuthData authData = authDAO.getAuth(command.getAuthToken());
-            if(authData == null){
-                sendError(context, "invalid auth token");
+            CommandContext commandContext = getCommandContext(context, command);
+            if (commandContext == null){
                 return;
             }
-            GameData gameData = gameDAO.getGame(command.getGameID());
-            if(gameData == null){
-                sendError(context, "game not found");
+            String username = commandContext.username();
+            GameData gameData = commandContext.gameData();
+            ChessGame game = commandContext.game();
+            ChessGame.TeamColor playerColor = null;
+            if(username.equals(gameData.whiteUsername())){
+                playerColor = ChessGame.TeamColor.WHITE;
+            } else if (username.equals(gameData.blackUsername())){
+                playerColor = ChessGame.TeamColor.BLACK;
+            }
+            if (playerColor == null) {
+                sendError(context, "Observers can't make moves...");
                 return;
             }
-            String username = authData.username();
-            String role = getRole(gameData, username);
-            ChessGame game = gameData.game();
+            if(game.getTeamTurn() != playerColor) {
+                sendError(context, "Not your turn :(");
+                return;
+            }
 
-            if(role.equals("OBSERVER")){
-                sendError(context, "Observers can't make moves");
-                return;
-            }
-            if(role.equals("WHITE") && game.getTeamTurn() != ChessGame.TeamColor.WHITE){
-                sendError(context ,"Not your turn");
-                return;
-            }
-            if(role.equals("BLACK") && game.getTeamTurn() != ChessGame.TeamColor.BLACK){
-                sendError(context, "not your turn");
-                return;
-            }
             game.makeMove(command.getMove());
             GameData newGame = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
             gameDAO.updateGame(newGame);
             LoadGameMessage loadGameMessage = new LoadGameMessage(game);
             connectionManager.broadcast(command.getGameID(), gson.toJson(loadGameMessage));
-            String notification;
-            if(role.equals("WHITE")){
-                notification = username + " made a move as White!";
-            } else {
-                notification = username + " made a move as Black!";
-            }
-
+            String notification = username +" made a move";
             NotificationMessage notificationMessage = new NotificationMessage(notification);
             connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
 
         } catch (Exception e) {
+            sendError(context, e.getMessage());
+        }
+    }
+
+    private void resign(WsMessageContext context, UserGameCommand command){
+        try{
+            CommandContext commandContext = getCommandContext(context, command);
+            if (commandContext == null){
+                return;
+            }
+            GameData gameData = commandContext.gameData();
+            String username = commandContext.username();
+            ChessGame game = gameData.game();
+
+            ChessGame.TeamColor playerColor = null;
+            if (username.equals((gameData.whiteUsername()))){
+                playerColor = ChessGame.TeamColor.WHITE;
+            } else if (username.equals(gameData.blackUsername())){
+                playerColor = ChessGame.TeamColor.BLACK;
+            }
+
+            if(playerColor == null){
+                sendError(context, "Observers can't resign...");
+                return;
+            }
+            if (game.isGameOver()) {
+                sendError(context, "Game is already over");
+                return;
+            }
+            game.setGameOver(true);
+
+            GameData gameUpdate = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
+            gameDAO.updateGame(gameUpdate);
+            String notification;
+            if (playerColor == ChessGame.TeamColor.WHITE){
+                notification = username + " resigned. Black wins!";
+            } else {
+                notification = username + " resigned. White wins!";
+            }
+            NotificationMessage notificationMessage = new NotificationMessage(notification);
+            connectionManager.broadcast(command.getGameID(), gson.toJson(notificationMessage));
+        } catch (Exception e){
             sendError(context, e.getMessage());
         }
     }
@@ -179,5 +194,23 @@ public class WebSocketHandler {
     private void sendError(WsMessageContext context, String error){
         ErrorMessage errorMessage = new ErrorMessage(error);
         context.send(gson.toJson(errorMessage));
+    }
+
+    private CommandContext getCommandContext(WsMessageContext context, UserGameCommand command) {
+        AuthData authData = authDAO.getAuth(command.getAuthToken());
+        if (authData == null) {
+            sendError(context, "invalid auth token");
+            return null;
+        }
+
+        GameData gameData = gameDAO.getGame(command.getGameID());
+        if (gameData == null) {
+            sendError(context, "game not found");
+            return null;
+        }
+
+        String username = authData.username();
+        ChessGame game = gameData.game();
+        return new CommandContext(authData, gameData, username, game);
     }
 }
