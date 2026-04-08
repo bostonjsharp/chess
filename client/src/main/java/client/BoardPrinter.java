@@ -3,12 +3,19 @@ package client;
 import chess.ChessBoard;
 import chess.ChessGame;
 import chess.ChessPiece;
+import chess.ChessMove;
 import chess.ChessPosition;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import static ui.EscapeSequences.*;
 
 public class BoardPrinter {
 
-    public void drawBoard(ChessGame game, ChessGame.TeamColor view) {
+    public void drawBaseBoard(ChessGame game, ChessGame.TeamColor view, Set<ChessPosition> highlights){
         ChessBoard board = game.getBoard();
 
         printColLabels(view);
@@ -23,9 +30,11 @@ public class BoardPrinter {
         for (int row = startRow; (rowStep > 0) ? row <= endRow : row>= endRow; row += rowStep) {
             System.out.print(SET_BG_COLOR_BLACK + SET_TEXT_COLOR_WHITE + " " + row + " ");
             for (int col = startCol;(colStep > 0) ? col <= endCol : col>= endCol; col += colStep){
+                ChessPosition position = new ChessPosition(row, col);
                 boolean lightSquare = (row + col) % 2 == 1;
-                ChessPiece piece = board.getPiece(new ChessPosition(row,col));
-                printSquare(lightSquare, piece);
+                boolean highlighted = highlights.contains(position);
+                ChessPiece piece = board.getPiece(position);
+                printSquare(lightSquare, highlighted, piece);
                 if (col == endCol){
                     break;
                 }
@@ -38,6 +47,21 @@ public class BoardPrinter {
         }
         printColLabels(view);
         System.out.println(RESET_BG_COLOR + RESET_TEXT_COLOR);
+    }
+
+    public void drawBoard(ChessGame game, ChessGame.TeamColor view) {
+        drawBaseBoard(game, view, Collections.emptySet());
+    }
+
+    public void drawHighlights(ChessGame game, ChessGame.TeamColor view, ChessPosition position, Collection<ChessMove> legalMoves){
+        Set<ChessPosition> highlights = new HashSet<>();
+        highlights.add(position);
+        if(legalMoves != null){
+            for (ChessMove move : legalMoves){
+                highlights.add(move.getEndPosition());
+            }
+        }
+        drawBaseBoard(game, view, highlights);
     }
 
     private void printColLabels(ChessGame.TeamColor view){
@@ -55,8 +79,13 @@ public class BoardPrinter {
         System.out.println("   " + RESET_BG_COLOR + RESET_TEXT_COLOR);
     }
 
-    private void printSquare(boolean lightSquare, ChessPiece piece) {
-        String bg = lightSquare ? LIGHT_SQUARE : DARK_SQUARE;
+    private void printSquare(boolean lightSquare, boolean highlighted, ChessPiece piece) {
+        String bg;
+        if (highlighted) {
+            bg = SET_BG_COLOR_GREEN;
+        } else {
+            bg = lightSquare ? LIGHT_SQUARE : DARK_SQUARE;
+        }
         System.out.print(bg);
 
         if (piece == null) {

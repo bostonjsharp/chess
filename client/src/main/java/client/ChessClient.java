@@ -58,6 +58,11 @@ public class ChessClient implements ServerMessageObserver{
 
         if (inGame) {
             return switch (command){
+                case "redraw" -> {
+                    drawCurrentBoard();
+                    yield "";
+                }
+                case "highlight" -> highlightMoves(parts);
                 case "move" -> makeMove(parts);
                 case "leave" -> leaveGame();
                 case "resign" -> resignGame();
@@ -333,9 +338,31 @@ public class ChessClient implements ServerMessageObserver{
         };
     }
 
+    private String highlightMoves(String[] parts){
+        try{
+            if (currentGame == null){
+                return "You are not currently in a game...";
+            }
+            if(parts.length != 2){
+                return "Please use the format: highlight <position>";
+            }
+            ChessPosition position = parsePosition(parts[1]);
+            ChessGame.TeamColor perspective = (currentPlayerColor == ChessGame.TeamColor.BLACK) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            var legalMoves = currentGame.validMoves(position);
+            BoardPrinter printer = new BoardPrinter();
+            printer.drawHighlights(currentGame, perspective, position, legalMoves);
+            printGameMenu();
+            return "";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
     private String gameHelp() {
         return """
                 move <start> <end> [promotion]  -make a move
+                redraw                          -redraw the board
+                highlight <position>            -highlight legal moves
                 resign                          -resign the game
                 leave                           -leave the current game
                 help                            -show this help message
@@ -367,6 +394,8 @@ public class ChessClient implements ServerMessageObserver{
     private void printGameMenu() {
         System.out.println("""
                 move <start> <end> [promotion]      (Make a Move)
+                redraw                              (Redraw Board)
+                highlight <position>                (Highlight Legal Moves)
                 resign                              (Resign Game)
                 help                                (Get Help)
                 leave                               (Leave Game)
