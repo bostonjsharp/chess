@@ -60,6 +60,7 @@ public class ChessClient implements ServerMessageObserver{
             return switch (command){
                 case "move" -> makeMove(parts);
                 case "leave" -> leaveGame();
+                case "resign" -> resignGame();
                 case "help" -> gameHelp();
                 default -> "Unknown command, type help if needed.";
             };
@@ -294,6 +295,19 @@ public class ChessClient implements ServerMessageObserver{
         }
     }
 
+    private String resignGame() {
+        try{
+            if (webSocketCommunicator == null || currentGameID == null){
+                return "You aren't currently in a game...";
+            }
+            UserGameCommand resignCommand = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, currentGameID);
+            webSocketCommunicator.sendCommand(resignCommand);
+            return "Resignation sent!";
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
     private ChessPosition parsePosition(String input){
         if(input == null || input.length() != 2){
             throw new IllegalArgumentException("Invalid position... Please use a format like d5");
@@ -322,6 +336,7 @@ public class ChessClient implements ServerMessageObserver{
     private String gameHelp() {
         return """
                 move <start> <end> [promotion]  -make a move
+                resign                          -resign the game
                 leave                           -leave the current game
                 help                            -show this help message
                 """;
@@ -352,6 +367,7 @@ public class ChessClient implements ServerMessageObserver{
     private void printGameMenu() {
         System.out.println("""
                 move <start> <end> [promotion]      (Make a Move)
+                resign                              (Resign Game)
                 help                                (Get Help)
                 leave                               (Leave Game)
                 """);

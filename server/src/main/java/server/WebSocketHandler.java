@@ -110,6 +110,10 @@ public class WebSocketHandler {
             String username = commandContext.username();
             GameData gameData = commandContext.gameData();
             ChessGame game = commandContext.game();
+            if (game.isGameOver()) {
+                sendError(context, "Game is over!");
+                return;
+            }
             ChessGame.TeamColor playerColor = null;
             if(username.equals(gameData.whiteUsername())){
                 playerColor = ChessGame.TeamColor.WHITE;
