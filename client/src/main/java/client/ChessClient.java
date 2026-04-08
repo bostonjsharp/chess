@@ -345,7 +345,8 @@ public class ChessClient implements ServerMessageObserver{
                 return "Please use the format: highlight <position>";
             }
             ChessPosition position = parsePosition(parts[1]);
-            ChessGame.TeamColor perspective = (currentPlayerColor == ChessGame.TeamColor.BLACK) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            ChessGame.TeamColor perspective = (currentPlayerColor == ChessGame.TeamColor.BLACK)
+                    ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
             var legalMoves = currentGame.validMoves(position);
             BoardPrinter printer = new BoardPrinter();
             printer.drawHighlights(currentGame, perspective, position, legalMoves);
