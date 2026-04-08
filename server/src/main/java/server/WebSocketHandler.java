@@ -17,6 +17,8 @@ import websocket.messages.ErrorMessage;
 import websocket.messages.LoadGameMessage;
 import websocket.messages.NotificationMessage;
 
+import java.io.IOException;
+
 public class WebSocketHandler {
     private final AuthDAO authDAO;
     private final GameDAO gameDAO;
@@ -88,7 +90,11 @@ public class WebSocketHandler {
             GameData gameData = commandContext.gameData();
             String role = getRole(gameData, username);
             connectionManager.remove(command.getGameID(), context.session);
-
+            if(role.equals("WHITE") || role.equals("BLACK")){
+                String white = role.equals("WHITE") ? null : gameData.whiteUsername();
+                String black = role.equals("BLACK") ? null : gameData.blackUsername();
+                gameDAO.updateGame(new GameData(gameData.gameID(), white, black, gameData.gameName(), gameData.game()));
+            }
             NotificationMessage notificationMessage;
             if(role.equals("WHITE")){
                 notificationMessage = new NotificationMessage(username + " has left the game as white");
@@ -127,22 +133,24 @@ public class WebSocketHandler {
             }
 
             game.makeMove(command.getMove());
-            ChessGame.TeamColor opponent = (playerColor == ChessGame.TeamColor.WHITE) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
-            if(game.isInCheckmate(opponent) || game.isInStalemate(opponent)){
+            ChessGame.TeamColor teamTurn = game.getTeamTurn();
+            boolean ended = game.isInCheckmate(teamTurn) || game.isInStalemate(teamTurn);
+            if (ended) {
                 game.setGameOver(true);
             }
             GameData newGame = new GameData(gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(), gameData.gameName(), game);
             gameDAO.updateGame(newGame);
             LoadGameMessage loadGameMessage = new LoadGameMessage(game);
             connectionManager.broadcast(command.getGameID(), gson.toJson(loadGameMessage));
+
             String moveText = username + " moved from " + toChessNotation(command.getMove().getStartPosition())
                      + " to " + toChessNotation(command.getMove().getEndPosition());
-
             if(command.getMove().getPromotionPiece() != null){
                 moveText += " promoting to " + command.getMove().getPromotionPiece();
             }
             NotificationMessage notificationMessage = new NotificationMessage(moveText);
             connectionManager.broadcastExceptRoot(command.getGameID(), context.session, gson.toJson(notificationMessage));
+            broadcastGameStatus(gameData, game, teamTurn);
 
         } catch (Exception e) {
             sendError(context, e.getMessage());
@@ -208,6 +216,26 @@ public class WebSocketHandler {
             return ChessGame.TeamColor.BLACK;
         }
         return null;
+    }
+
+    private static String getUserForColor(GameData gameData, ChessGame.TeamColor color){
+        return color == ChessGame.TeamColor.WHITE ? gameData.whiteUsername() : gameData.blackUsername();
+    }
+
+    private void broadcastGameStatus(GameData gameData, ChessGame game, ChessGame.TeamColor color) throws IOException {
+
+        String name = getUserForColor(gameData, color);
+        String message = null;
+        if(game.isInCheckmate(color)){
+            message = name + " is in checkmate";
+        } else if (game.isInStalemate(color)){
+            message = name + " is in stalemate";
+        } else if (game.isInCheck(color)){
+            message = name + " is in check";
+        }
+        if (message != null) {
+            connectionManager.broadcast(gameData.gameID(), gson.toJson(new NotificationMessage(message)));
+        }
     }
 
     private String toChessNotation(ChessPosition position){

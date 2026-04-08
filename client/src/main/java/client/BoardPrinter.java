@@ -17,7 +17,7 @@ public class BoardPrinter {
 
     public void drawBaseBoard(ChessGame game, ChessGame.TeamColor view, Set<ChessPosition> highlights){
         ChessBoard board = game.getBoard();
-
+        System.out.println();
         printColLabels(view);
 
         int startRow = (view == ChessGame.TeamColor.WHITE) ? 8 : 1;
