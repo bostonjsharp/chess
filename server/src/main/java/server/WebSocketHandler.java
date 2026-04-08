@@ -153,9 +153,11 @@ public class WebSocketHandler {
             broadcastGameStatus(gameData, game, teamTurn);
 
         } catch (InvalidMoveException e) {
-            sendError(context, e.getMessage());
+            String detail = e.getMessage();
+            sendError(context, (detail != null && !detail.isBlank()) ? detail : "Error: invalid move");
         } catch (Exception e) {
-            sendError(context, e.getMessage());
+            String detail = e.getMessage();
+            sendError(context, detail != null ? detail : "Error: unknown failure");
         }
     }
 
