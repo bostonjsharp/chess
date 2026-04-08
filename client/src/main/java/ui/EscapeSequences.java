@@ -8,6 +8,9 @@ public class EscapeSequences {
     private static final String UNICODE_ESCAPE = "\u001b";
     private static final String ANSI_ESCAPE = "\033";
     public static final String EM_SPACE = "\u2003";
+    public static final String SELECTED_SQUARE_BG = "\u001B[48;2;255;220;60m";
+    public static final String MOVE_HIGHLIGHT_LIGHT_BG = "\u001B[48;2;125;148;128m";
+    public static final String MOVE_HIGHLIGHT_DARK_BG = "\u001B[48;2;58;98;108m";
 
     public static final String DARK_SQUARE = "\u001B[48;2;93;127;163m";
     public static final String LIGHT_SQUARE = "\u001B[48;2;200;200;200m";

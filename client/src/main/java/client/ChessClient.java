@@ -126,6 +126,7 @@ public class ChessClient implements ServerMessageObserver{
 
     private String logout() {
         try{
+            closeWebSocketIfOpen();
             server.logout(authToken);
             authToken = null;
             username = null;
@@ -221,7 +222,6 @@ public class ChessClient implements ServerMessageObserver{
             if(webSocketCommunicator != null) {
                 UserGameCommand leaveCommand = new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, currentGameID);
                 webSocketCommunicator.sendCommand(leaveCommand);
-                webSocketCommunicator.close();
             }
         } catch (Exception e) {
             return e.getMessage();
@@ -230,11 +230,13 @@ public class ChessClient implements ServerMessageObserver{
         currentGame = null;
         currentPlayerColor = null;
         currentGameID = null;
-        webSocketCommunicator = null;
         return "Left the game.";
     }
 
     public void notify(ServerMessage message, String messageText){
+        if (currentGameID == null) {
+            return;
+        }
         switch (message.getServerMessageType()) {
             case LOAD_GAME -> {
                 LoadGameMessage loadGameMessage = gson.fromJson(messageText, LoadGameMessage.class);
@@ -265,14 +267,6 @@ public class ChessClient implements ServerMessageObserver{
         }
 
         printGameMenu();
-    }
-
-    private void connectGame(int gameID, ChessGame.TeamColor color) throws Exception{
-        currentGameID = gameID;
-        currentPlayerColor = color;
-        webSocketCommunicator = new WebSocketCommunicator("http://localhost:8080", this);
-        UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
-        webSocketCommunicator.sendCommand(connectCommand);
     }
 
     private String makeMove(String[] parts){
@@ -413,7 +407,27 @@ public class ChessClient implements ServerMessageObserver{
     }
 
     private String quit() {
+        try {
+            closeWebSocketIfOpen();
+        } catch (Exception ignored) {
+        }
         running = false;
         return "Have a nice day!";
+    }
+
+    private void closeWebSocketIfOpen() throws Exception {
+        if (webSocketCommunicator != null) {
+            webSocketCommunicator.close();
+            webSocketCommunicator = null;
+        }
+    }
+
+    private void connectGame(int gameID, ChessGame.TeamColor color) throws Exception{
+        closeWebSocketIfOpen();
+        currentGameID = gameID;
+        currentPlayerColor = color;
+        webSocketCommunicator = new WebSocketCommunicator("http://localhost:8080", this);
+        UserGameCommand connectCommand = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+        webSocketCommunicator.sendCommand(connectCommand);
     }
 }

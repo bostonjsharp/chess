@@ -15,7 +15,7 @@ import static ui.EscapeSequences.*;
 
 public class BoardPrinter {
 
-    public void drawBaseBoard(ChessGame game, ChessGame.TeamColor view, Set<ChessPosition> highlights){
+    public void drawBaseBoard(ChessGame game, ChessGame.TeamColor view, ChessPosition selected, Set<ChessPosition> highlights){
         ChessBoard board = game.getBoard();
         System.out.println();
         printColLabels(view);
@@ -32,9 +32,10 @@ public class BoardPrinter {
             for (int col = startCol;(colStep > 0) ? col <= endCol : col>= endCol; col += colStep){
                 ChessPosition position = new ChessPosition(row, col);
                 boolean lightSquare = (row + col) % 2 == 1;
+                boolean isSelected = selected != null && selected.equals(position);
                 boolean highlighted = highlights.contains(position);
                 ChessPiece piece = board.getPiece(position);
-                printSquare(lightSquare, highlighted, piece);
+                printSquare(lightSquare, isSelected, highlighted, piece);
                 if (col == endCol){
                     break;
                 }
@@ -50,18 +51,17 @@ public class BoardPrinter {
     }
 
     public void drawBoard(ChessGame game, ChessGame.TeamColor view) {
-        drawBaseBoard(game, view, Collections.emptySet());
+        drawBaseBoard(game, view, null, Collections.emptySet());
     }
 
     public void drawHighlights(ChessGame game, ChessGame.TeamColor view, ChessPosition position, Collection<ChessMove> legalMoves){
         Set<ChessPosition> highlights = new HashSet<>();
-        highlights.add(position);
         if(legalMoves != null){
             for (ChessMove move : legalMoves){
                 highlights.add(move.getEndPosition());
             }
         }
-        drawBaseBoard(game, view, highlights);
+        drawBaseBoard(game, view, position, highlights);
     }
 
     private void printColLabels(ChessGame.TeamColor view){
@@ -79,10 +79,12 @@ public class BoardPrinter {
         System.out.println("   " + RESET_BG_COLOR + RESET_TEXT_COLOR);
     }
 
-    private void printSquare(boolean lightSquare, boolean highlighted, ChessPiece piece) {
+    private void printSquare(boolean lightSquare, boolean isSelected, boolean highlighted, ChessPiece piece) {
         String bg;
-        if (highlighted) {
-            bg = SET_BG_COLOR_GREEN;
+        if (isSelected) {
+            bg = SELECTED_SQUARE_BG;
+        } else if (highlighted){
+            bg = lightSquare ? MOVE_HIGHLIGHT_LIGHT_BG : MOVE_HIGHLIGHT_DARK_BG;
         } else {
             bg = lightSquare ? LIGHT_SQUARE : DARK_SQUARE;
         }
