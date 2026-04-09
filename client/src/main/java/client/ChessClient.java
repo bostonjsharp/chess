@@ -284,6 +284,21 @@ public class ChessClient implements ServerMessageObserver{
             if (parts.length == 4){
                 promotion = parsePromotionPiece(parts[3]);
             }
+            ChessPiece movingPiece = currentGame.getBoard().getPiece(start);
+            if (movingPiece == null){
+                return "There is not piece on selected square";
+            }
+
+            boolean needsPromo = movingPiece.getPieceType() == ChessPiece.PieceType.PAWN &&
+                    isPawnMoveToPromo(movingPiece.getTeamColor(), end);
+            if(parts.length == 4){
+                if (!needsPromo){
+                    return "Promotion can only be used when a pawn moves to the back row... Try again later.";
+                }
+            } else if (needsPromo){
+                return "This move needs a promotion! Type any of these after your end position to " +
+                        "change your piece: <q|r|b|n|queen|rook|bishop|knight>";
+            }
 
             ChessMove move = new ChessMove(start, end, promotion);
             MakeMoveCommand command = new MakeMoveCommand(authToken, currentGameID, move);
@@ -334,6 +349,11 @@ public class ChessClient implements ServerMessageObserver{
             case "knight", "n" -> ChessPiece.PieceType.KNIGHT;
             default -> throw new IllegalArgumentException("Invalid promotion piece...");
         };
+    }
+
+    private static boolean isPawnMoveToPromo(ChessGame.TeamColor color, ChessPosition end){
+        return (color == ChessGame.TeamColor.WHITE && end.getRow() == 8) ||
+                (color == ChessGame.TeamColor.BLACK && end.getRow() == 1);
     }
 
     private String highlightMoves(String[] parts){
